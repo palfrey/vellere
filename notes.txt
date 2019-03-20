@@ -1,0 +1,4 @@
+https://developer.github.com/changes/2018-04-24-preview-dependency-graph-and-vulnerability-hooks/
+https://github.com/skevy/graphiql-app
+https://www.dictionary.com/browse/vulnerably
+vellere "pluck, to tear."

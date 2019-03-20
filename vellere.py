@@ -12,6 +12,7 @@ query ($org: String!, $repo_after: String) {
           vulnerabilityAlerts(first: 20) {
             edges {
               node {
+                id
                 vulnerableManifestPath
                 vulnerableRequirements
                 dismisser {
@@ -38,7 +39,6 @@ query ($org: String!, $repo_after: String) {
     }
   }
 }
-
 '''
 variables = {
     "repo_after": None,
