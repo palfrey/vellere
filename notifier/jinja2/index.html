@@ -1,0 +1,7 @@
+{{ user }}<br />
+
+<ul>
+{% for org in orgs %}
+<li>{{org.id}} {{ org.name }}</li>
+{% endfor %}
+</ul>

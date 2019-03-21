@@ -1,5 +1,6 @@
 requests
 django
 requests_oauthlib
+jinja2
 
 pip-tools

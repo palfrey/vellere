@@ -53,10 +53,10 @@ def get_organisations(github, user):
 
 @login_required
 def index(req):
-    orgs = list(OrganisationUser.objects.filter(user=req.user))
+    orgs = [ou.org for ou in OrganisationUser.objects.filter(user=req.user)]
     if len(orgs) == 0:
         orgs = get_organisations(get_github(req), req.user)
-    return render('index', user=req.user, orgs=orgs)
+    return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
