@@ -24,9 +24,15 @@ class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 class OrganisationUser(models.Model):
     user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "(%s, %s)" % (self.user.name, self.org.name)
 
     class Meta:
         indexes = [
@@ -37,6 +43,7 @@ class OrganisationUser(models.Model):
 class Repository(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
 
 class Vulnerability(models.Model):
     id = models.CharField(max_length=64, primary_key=True)
