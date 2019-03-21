@@ -2,3 +2,5 @@ https://developer.github.com/changes/2018-04-24-preview-dependency-graph-and-vul
 https://github.com/skevy/graphiql-app
 https://www.dictionary.com/browse/vulnerably
 vellere "pluck, to tear."
+
+OAUTHLIB_INSECURE_TRANSPORT=1 GITHUB_CLIENT_SECRET=foo GITHUB_CLIENT_ID=bar python manage.py runserver

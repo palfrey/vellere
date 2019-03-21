@@ -3,8 +3,22 @@ from django.contrib.auth.models import User
 
 class GithubUser(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
+    username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    oauth_token = models.CharField(max_length=255)
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = "username"
+
+    def __str__(self):
+        return "Github User: %s" % self.username
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
 
 class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
