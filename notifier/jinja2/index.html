@@ -2,6 +2,6 @@
 
 <ul>
 {% for org in orgs %}
-<li>{{org.id}} {{ org.name }}</li>
+<li><a href="{{ url('organisation', kwargs={'org': org.id}) }}">{{ org.name }}</a></li>
 {% endfor %}
 </ul>

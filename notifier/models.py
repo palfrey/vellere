@@ -22,6 +22,7 @@ class GithubUser(models.Model):
 
 class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
+    login = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
 
     def __str__(self):

@@ -9,9 +9,9 @@ import json
 def get_github(req):
     return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
 
-def run_graphql(github, query):
+def run_graphql(github, query, variables={}):
     res = github.post('https://api.github.com/graphql',
-        json={"query": query},
+        json={"query": query, "variables": variables},
         headers={
             "Accept": "application/vnd.github.vixen-preview"
         })
@@ -19,20 +19,22 @@ def run_graphql(github, query):
     return res.json()['data']
 
 def get_organisations(github, user):
-    data = run_graphql(github, """{
-        viewer {
-            organizations(first: 10) {
-            edges {
-                cursor
-                node {
-                id
-                name
-                viewerCanAdminister
-                }
-            }
-            }
+    data = run_graphql(github, """
+{
+  viewer {
+    organizations(first: 10) {
+      edges {
+        cursor
+        node {
+          id
+          name
+          login
+          viewerCanAdminister
         }
+      }
     }
+  }
+}
     """)
     orgs = []
     for org in data["viewer"]["organizations"]["edges"]:
@@ -43,6 +45,7 @@ def get_organisations(github, user):
             except Organisation.DoesNotExist:
                 org = Organisation(id=node["id"])
             org.name = node["name"]
+            org.login = node["login"]
             org.save()
             orgs.append(org)
             try:
@@ -57,6 +60,60 @@ def index(req):
     if len(orgs) == 0:
         orgs = get_organisations(get_github(req), req.user)
     return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
+
+def get_vulnerabilities(github, name):
+    query = '''
+query ($org: String!, $repo_after: String) {
+  organization(login: $org) {
+    repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
+      edges {
+        cursor
+        node {
+          id
+          name
+          vulnerabilityAlerts(first: 20) {
+            edges {
+              node {
+                id
+                vulnerableManifestPath
+                vulnerableRequirements
+                dismisser {
+                  id
+                }
+                securityVulnerability {
+                  severity
+                  advisory {
+                    description
+                    references {
+                      url
+                    }
+                  }
+                  vulnerableVersionRange
+                  package {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    '''
+    variables = {
+        "repo_after": None,
+        "org": name
+    }
+    data = run_graphql(github, query, variables)["organization"]["repositories"]["edges"]
+    raise Exception(data)
+
+@login_required
+def organisation(req, org):
+    org = Organisation.objects.get(id=org)
+    vuln = get_vulnerabilities(get_github(req), org.login)
+    raise Exception(vuln)
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
