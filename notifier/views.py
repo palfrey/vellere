@@ -61,7 +61,7 @@ def index(req):
         orgs = get_organisations(get_github(req), req.user)
     return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
 
-def get_vulnerabilities(github, name):
+def get_vulnerabilities(github, org):
     query = '''
 query ($org: String!, $repo_after: String) {
   organization(login: $org) {
@@ -104,15 +104,43 @@ query ($org: String!, $repo_after: String) {
     '''
     variables = {
         "repo_after": None,
-        "org": name
+        "org": org.login
     }
-    data = run_graphql(github, query, variables)["organization"]["repositories"]["edges"]
-    raise Exception(data)
+    repos = []
+    for data in run_graphql(github, query, variables)["organization"]["repositories"]["edges"]:
+        node = data["node"]
+        try:
+            repo = Repository.objects.get(id=node["id"])
+        except Repository.DoesNotExist:
+            repo = Repository(id=node["id"])
+        repo.org = org
+        repo.name = node["name"]
+        repo.save()
+        repos.append(repo)
+        for data in node["vulnerabilityAlerts"]["edges"]:
+            node = data["node"]
+            try:
+                vuln = Vulnerability.objects.get(id=node["id"])
+            except Vulnerability.DoesNotExist:
+                vuln = Vulnerability(id=node["id"])
+            vuln.repo = repo
+            vuln.manifest_path = node["vulnerableManifestPath"]
+            vuln.requirements = node["vulnerableRequirements"]
+            vuln.dismissed = node["dismisser"] != None
+            sec = node["securityVulnerability"]
+            vuln.severity = sec["severity"]
+            adv = sec["advisory"]
+            vuln.description = adv["description"]
+            vuln.url = adv["references"][0]["url"]
+            vuln.vulnerableVersions = sec["vulnerableVersionRange"]
+            vuln.package = sec["package"]["name"]
+            vuln.save()
+    return repos
 
 @login_required
 def organisation(req, org):
     org = Organisation.objects.get(id=org)
-    vuln = get_vulnerabilities(get_github(req), org.login)
+    vuln = get_vulnerabilities(get_github(req), org)
     raise Exception(vuln)
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'

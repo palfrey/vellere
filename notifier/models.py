@@ -46,8 +46,12 @@ class Repository(models.Model):
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.name
+
 class Vulnerability(models.Model):
     id = models.CharField(max_length=64, primary_key=True)
+    repo = models.ForeignKey(Repository, on_delete=models.CASCADE)
     manifest_path = models.CharField(max_length=255)
     requirements = models.CharField(max_length=64)
     dismissed = models.BooleanField()
