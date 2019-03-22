@@ -95,8 +95,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'notifier.GithubUser'
 LOGIN_URL = '/github/login'
-GITHUB_CLIENT_ID = os.environ["GITHUB_CLIENT_ID"]
-GITHUB_CLIENT_SECRET = os.environ["GITHUB_CLIENT_SECRET"]
+GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "<Missing GITHUB_CLIENT_ID>")
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "<Missing GITHUB_CLIENT_SECRET>")
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
