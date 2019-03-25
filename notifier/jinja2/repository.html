@@ -1,3 +1,7 @@
+<h1>{{ organisation.name }} - {{ repository.name }} </h1>
+
+<a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
+
 {% if vulns %}
 <ul>
 {% for vuln in vulns %}
@@ -6,5 +10,5 @@
 {% endfor %}
 </ul>
 {% else %}
-No vulnerabilities known. They may be disabled for this repo. Please check the <a href="https://github.com/{{ org }}/{{ repo }}/settings">repository settings</a> under "Data services"
+No vulnerabilities known. They may be disabled for this repo. Please check the <a href="https://github.com/{{ organisation.login }}/{{ repository.name }}/settings">repository settings</a> under "Data services"
 {% endif %}

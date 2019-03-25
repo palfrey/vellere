@@ -1,5 +1,11 @@
+<h1>{{ organisation.name }} </h1>
+
+<a href="{{ url('index') }}">Go back to list of organisations</a>
+
 <ul>
 {% for repo in repos %}
-<li><a href="{{ url('repository', kwargs={'org': org, 'repo': repo.name}) }}">{{ repo.name }}</a></li>
+<li><a href="{{ url('repository', kwargs={'org': organisation.login, 'repo': repo.name}) }}">{{ repo.name }}</a></li>
 {% endfor %}
 </ul>
+
+<a href="{{ url('index') }}">Go back to list of organisations</a>

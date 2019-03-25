@@ -188,7 +188,7 @@ def organisation(req, org):
     else:
         repos = list(organisation.repository_set.all())
     repos.sort(key=lambda x: x.name.lower())
-    return render(req, "organisation.html", {"org": org, "repos": repos})
+    return render(req, "organisation.html", {"organisation": organisation, "repos": repos})
 
 @login_required
 def repository(req, org, repo):
@@ -200,7 +200,7 @@ def repository(req, org, repo):
     else:
         vulns = list(repository.vulnerability_set.all())
     vulns.sort(key=lambda x:x.severity)
-    return render(req, "repository.html", {"org": org, "repo": repo, "vulns": vulns})
+    return render(req, "repository.html", {"organisation": organisation, "repository": repository, "vulns": vulns})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
