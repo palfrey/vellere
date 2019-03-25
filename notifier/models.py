@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+import humanize
+from django.utils import timezone
 
 class GithubUser(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
@@ -49,6 +51,16 @@ class Repository(models.Model):
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     vuln_updated = models.DateTimeField(null=True)
+
+    def vuln_info(self):
+        if self.vuln_updated == None:
+            return "Never updated"
+        vuln_count = self.vulnerability_set.count()
+        update_when = humanize.naturaltime(timezone.now() - self.vuln_updated)
+        if vuln_count == 1:
+            return "1 vulnerability - updated %s" % update_when
+        else:
+            return "%d vulnerabilities - updated %s" % (vuln_count, update_when)
 
     def __str__(self):
         return self.name
