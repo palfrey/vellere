@@ -11,7 +11,7 @@ token_url = 'https://slack.com/api/oauth.access'
 
 @login_required
 def login(req, redir):
-    slack = OAuth2Session(settings.SLACK_CLIENT_ID, scope=['chat:write:bot'], redirect_uri=req.build_absolute_uri(reverse("slack_callback", args=[redir])))
+    slack = OAuth2Session(settings.SLACK_CLIENT_ID, scope=['chat:write:bot', 'channels:read', 'users:read'], redirect_uri=req.build_absolute_uri(reverse("slack_callback", args=[redir])))
     authorization_url, state = slack.authorization_url(authorization_base_url)
     req.session['slack_oauth_state'] = state
     return redirect(authorization_url)

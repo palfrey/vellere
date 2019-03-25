@@ -7,6 +7,8 @@ from django.contrib.auth import login
 from django.utils import timezone
 import json
 import datetime
+from django.views.decorators.http import require_GET, require_POST
+from django.urls import reverse
 
 def get_github(req):
     return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
@@ -191,6 +193,7 @@ def organisation(req, org):
     return render(req, "organisation.html", {"organisation": organisation, "repos": repos})
 
 @login_required
+@require_GET
 def repository(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
@@ -200,4 +203,16 @@ def repository(req, org, repo):
     else:
         vulns = list(repository.vulnerability_set.all())
     vulns.sort(key=lambda x:x.severity)
-    return render(req, "repository.html", {"organisation": organisation, "repository": repository, "vulns": vulns})
+    slack_links = SlackRepoLink.objects.filter(repo=repository)
+    linked_slacks = [s.slack for s in slack_links]
+    slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
+    return render(req, "repository.html", {"organisation": organisation, "repository": repository, "vulns": vulns, "slack_links": slack_links, "slacks": slack_instances})
+
+@login_required
+@require_POST
+def slack_repo_link(req, org, repo):
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    slack = get_object_or_404(SlackInstance, team_id=req.POST["slack"])
+    SlackRepoLink(repo=repository, slack=slack, channel=req.POST["channel"]).save()
+    return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))

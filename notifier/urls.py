@@ -10,4 +10,5 @@ urlpatterns = [
     path('slack/callback/<str:redir>', slack.callback, name="slack_callback"),
     path('organisation/<str:org>', views.organisation, name="organisation"),
     path('organisation/<str:org>/<str:repo>', views.repository, name="repository"),
+    path('organisation/<str:org>/<str:repo>/link', views.slack_repo_link, name="slack_repo_link"),
 ]

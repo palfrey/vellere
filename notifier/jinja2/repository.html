@@ -2,7 +2,29 @@
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
 
+{% if slack_links %}
+<h2>Sending to:</h2>
+<ul>
+    {% for link in slack_links %}
+        <li>{{ link.channel }} on {{ link.slack.name }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if slacks %}
+<form method="POST" action="{{ url('slack_repo_link', kwargs={'org': organisation.login, 'repo': repository.name})}}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <select name="slack">
+        {% for slack in slacks %}
+        <option value="{{slack.team_id}}">{{ slack.name }}</option>
+        {% endfor %}
+    </select><br />
+    <input type="text" name="channel" placeholder="Write channel name or username" required /><br />
+    <input type="submit" value="Link Slack instance" />
+</form>
+{% endif %}
+
 {% if vulns %}
+<h2>Vulnerabilities:</h2>
 <ul>
 {% for vuln in vulns %}
 <li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>

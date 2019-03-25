@@ -71,6 +71,20 @@ class Repository(models.Model):
     def __str__(self):
         return self.name
 
+class SlackRepoLink(models.Model):
+    slack = models.ForeignKey(SlackInstance, on_delete=models.CASCADE)
+    repo = models.ForeignKey(Repository, on_delete=models.CASCADE)
+    channel = models.CharField(max_length=255)
+
+    def __str__(self):
+        return "(%s, %s, %s)" % (self.slack.name, self.repo.name, self.channel)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['slack', 'repo'], name="slack_repo_link_idx"),
+        ]
+        unique_together = (('slack', 'repo'))
+
 class Vulnerability(models.Model):
     id = models.CharField(max_length=64, primary_key=True)
     repo = models.ForeignKey(Repository, on_delete=models.CASCADE)
@@ -82,3 +96,16 @@ class Vulnerability(models.Model):
     url = models.URLField()
     vulnerableVersions = models.CharField(max_length=64)
     package = models.CharField(max_length=255)
+
+class SlackVulnerabilitySent(models.Model):
+    slack = models.ForeignKey(SlackRepoLink, on_delete=models.CASCADE)
+    vulnerability = models.ForeignKey(Vulnerability, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "(%s, %s)" % (self.slack.name, self.vulnerability.id)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['slack', 'vulnerability'], name="slack_vulnerability_idx"),
+        ]
+        unique_together = (('slack', 'vulnerability'))
