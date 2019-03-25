@@ -6,6 +6,8 @@ class GithubUser(models.Model):
     username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     oauth_token = models.CharField(max_length=255)
+    orgs_updated = models.DateTimeField(null=True)
+
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "username"
 
@@ -24,6 +26,7 @@ class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     login = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
+    repos_updated = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.name
@@ -45,6 +48,7 @@ class Repository(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    vuln_updated = models.DateTimeField(null=True)
 
     def __str__(self):
         return self.name

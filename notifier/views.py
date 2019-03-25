@@ -4,7 +4,9 @@ from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from .models import *
 from django.contrib.auth import login
+from django.utils import timezone
 import json
+import datetime
 
 def get_github(req):
     return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
@@ -52,13 +54,17 @@ def get_organisations(github, user):
                 OrganisationUser.objects.get(user=user, org=org)
             except OrganisationUser.DoesNotExist:
                 OrganisationUser.objects.create(user=user, org=org)
+    user.orgs_updated = timezone.now()
+    user.save()
     return orgs
 
 @login_required
 def index(req):
-    orgs = [ou.org for ou in OrganisationUser.objects.filter(user=req.user)]
-    if len(orgs) == 0:
+    max_age = timezone.now() - datetime.timedelta(days=1)
+    if req.user.orgs_updated == None or req.user.orgs_updated < max_age:
         orgs = get_organisations(get_github(req), req.user)
+    else:
+        orgs = [ou.org for ou in OrganisationUser.objects.filter(user=req.user)]
     return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
 
 def get_repos(github, org):
@@ -100,6 +106,8 @@ query ($org: String!, $repo_after: String) {
         if new_repos < 20: # i.e. run out, because that's the limit
             break
         variables["repo_after"] = cursor
+    org.repos_updated = timezone.now()
+    org.save()
     return repos
 
 def get_vulnerabilities(github, org):
@@ -181,7 +189,11 @@ query ($org: String!, $repo_after: String) {
 @login_required
 def organisation(req, org):
     org = Organisation.objects.get(id=org)
-    repos = get_repos(get_github(req), org)
+    max_age = timezone.now() - datetime.timedelta(days=1)
+    if org.repos_updated == None or org.repos_updated < max_age:
+        repos = get_repos(get_github(req), org)
+    else:
+        repos = org.repository_set.all()
     return render(req, "organisation.html", {"repos": repos})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
