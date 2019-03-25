@@ -188,13 +188,17 @@ query ($org: String!, $repo_after: String) {
 
 @login_required
 def organisation(req, org):
-    org = Organisation.objects.get(login=org)
+    organisation = Organisation.objects.get(login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if org.repos_updated == None or org.repos_updated < max_age:
-        repos = get_repos(get_github(req), org)
+    if organisation.repos_updated == None or organisation.repos_updated < max_age:
+        repos = get_repos(get_github(req), organisation)
     else:
-        repos = org.repository_set.all()
-    return render(req, "organisation.html", {"repos": repos})
+        repos = organisation.repository_set.all()
+    return render(req, "organisation.html", {"org": org, "repos": repos})
+
+@login_required
+def repository(req, org, repo):
+    raise Exception
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'

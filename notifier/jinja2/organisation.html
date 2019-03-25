@@ -1,5 +1,5 @@
 <ul>
 {% for repo in repos %}
-<li><a href=>{{ repo.name }}</a></li>
+<li><a href="{{ url('repository', kwargs={'org': org, 'repo': repo.name}) }}">{{ repo.name }}</a></li>
 {% endfor %}
 </ul>
