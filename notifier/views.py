@@ -186,7 +186,8 @@ def organisation(req, org):
     if organisation.repos_updated == None or organisation.repos_updated < max_age:
         repos = get_repos(get_github(req), organisation)
     else:
-        repos = organisation.repository_set.all()
+        repos = list(organisation.repository_set.all())
+    repos.sort(key=lambda x: x.name.lower())
     return render(req, "organisation.html", {"org": org, "repos": repos})
 
 @login_required
