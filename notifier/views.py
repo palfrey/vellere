@@ -188,7 +188,7 @@ query ($org: String!, $repo_after: String) {
 
 @login_required
 def organisation(req, org):
-    org = Organisation.objects.get(id=org)
+    org = Organisation.objects.get(login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
     if org.repos_updated == None or org.repos_updated < max_age:
         repos = get_repos(get_github(req), org)
