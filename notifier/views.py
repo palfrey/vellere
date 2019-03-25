@@ -197,7 +197,8 @@ def repository(req, org, repo):
     if repository.vuln_updated == None or repository.vuln_updated < max_age:
         vulns = get_vulnerabilities(get_github(req), organisation, repository)
     else:
-        vulns = repository.vulnerability_set.all()
+        vulns = list(repository.vulnerability_set.all())
+    vulns.sort(key=lambda x:x.severity)
     return render(req, "repository.html", {"org": org, "repo": repo, "vulns": vulns})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
