@@ -1,6 +1,10 @@
+{% if vulns %}
 <ul>
 {% for vuln in vulns %}
 <li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>
 </li>
 {% endfor %}
 </ul>
+{% else %}
+No vulns
+{% endif %}
