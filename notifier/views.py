@@ -15,7 +15,7 @@ def run_graphql(github, query, variables={}):
     res = github.post('https://api.github.com/graphql',
         json={"query": query, "variables": variables},
         headers={
-            "Accept": "application/vnd.github.vixen-preview"
+            "Accept": "application/vnd.github.vixen-preview" # Vulnerability alert preview https://developer.github.com/v4/previews/#repository-vulnerability-alerts
         })
     res.raise_for_status()
     return res.json()['data']
