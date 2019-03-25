@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
@@ -110,39 +110,31 @@ query ($org: String!, $repo_after: String) {
     org.save()
     return repos
 
-def get_vulnerabilities(github, org):
+def get_vulnerabilities(github, org, repo):
     query = '''
-query ($org: String!, $repo_after: String) {
-  organization(login: $org) {
-    repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
+query ($org: String!, $repo: String!, $vuln_after: String) {
+  repository(owner: $org, name: $repo) {
+    vulnerabilityAlerts(first: 20, after: $vuln_after) {
       edges {
         cursor
         node {
           id
-          name
-          vulnerabilityAlerts(first: 20) {
-            edges {
-              node {
-                id
-                vulnerableManifestPath
-                vulnerableRequirements
-                dismisser {
-                  id
-                }
-                securityVulnerability {
-                  severity
-                  advisory {
-                    description
-                    references {
-                      url
-                    }
-                  }
-                  vulnerableVersionRange
-                  package {
-                    name
-                  }
-                }
+          vulnerableManifestPath
+          vulnerableRequirements
+          dismisser {
+            id
+          }
+          securityVulnerability {
+            severity
+            advisory {
+              description
+              references {
+                url
               }
+            }
+            vulnerableVersionRange
+            package {
+              name
             }
           }
         }
@@ -152,21 +144,14 @@ query ($org: String!, $repo_after: String) {
 }
     '''
     variables = {
-        "repo_after": None,
-        "org": org.login
+        "org": org.login,
+        "repo": repo.name,
+        "vuln_after": None
     }
-    repos = []
-    for data in run_graphql(github, query, variables)["organization"]["repositories"]["edges"]:
-        node = data["node"]
-        try:
-            repo = Repository.objects.get(id=node["id"])
-        except Repository.DoesNotExist:
-            repo = Repository(id=node["id"])
-        repo.org = org
-        repo.name = node["name"]
-        repo.save()
-        repos.append(repo)
-        for data in node["vulnerabilityAlerts"]["edges"]:
+    vulns = []
+    while True:
+        new_vulns = 0
+        for data in run_graphql(github, query, variables)["repository"]["vulnerabilityAlerts"]["edges"]:
             node = data["node"]
             try:
                 vuln = Vulnerability.objects.get(id=node["id"])
@@ -184,11 +169,19 @@ query ($org: String!, $repo_after: String) {
             vuln.vulnerableVersions = sec["vulnerableVersionRange"]
             vuln.package = sec["package"]["name"]
             vuln.save()
-    return repos
+            vulns.append(vuln)
+            cursor = data["cursor"]
+            new_vulns +=1
+        if new_vulns < 20: # i.e. run out, because that's the limit
+            break
+        variables["vuln_after"] = cursor
+    repo.vuln_updated = timezone.now()
+    repo.save()
+    return vulns
 
 @login_required
 def organisation(req, org):
-    organisation = Organisation.objects.get(login=org)
+    organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
     if organisation.repos_updated == None or organisation.repos_updated < max_age:
         repos = get_repos(get_github(req), organisation)
@@ -198,7 +191,14 @@ def organisation(req, org):
 
 @login_required
 def repository(req, org, repo):
-    raise Exception
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    max_age = timezone.now() - datetime.timedelta(days=1)
+    if repository.vuln_updated == None or repository.vuln_updated < max_age:
+        vulns = get_vulnerabilities(get_github(req), organisation, repository)
+    else:
+        vulns = repository.vulnerability_set.all()
+    return render(req, "repository.html", {"org": org, "repo": repo, "vulns": vulns})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
