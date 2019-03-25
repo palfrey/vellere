@@ -24,6 +24,12 @@ class GithubUser(models.Model):
     def is_authenticated(self):
         return True
 
+class SlackInstance(models.Model):
+    team_id = models.CharField(max_length=32, primary_key=True)
+    name = models.CharField(max_length=255)
+    github_user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
+    oauth_token = models.CharField(max_length=255)
+
 class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     login = models.CharField(max_length=255, unique=True)
