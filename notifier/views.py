@@ -61,6 +61,47 @@ def index(req):
         orgs = get_organisations(get_github(req), req.user)
     return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
 
+def get_repos(github, org):
+    query = """
+query ($org: String!, $repo_after: String) {
+  organization(login: $org) {
+    repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
+      edges {
+        cursor
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+    """
+    variables = {
+        "repo_after": None,
+        "org": org.login
+    }
+    repos = []
+    while True:
+        new_repos = 0
+        cursor = None
+        for data in run_graphql(github, query, variables)["organization"]["repositories"]["edges"]:
+            node = data["node"]
+            try:
+                repo = Repository.objects.get(id=node["id"])
+            except Repository.DoesNotExist:
+                repo = Repository(id=node["id"])
+            repo.org = org
+            repo.name = node["name"]
+            repo.save()
+            repos.append(repo)
+            new_repos +=1
+            cursor = data["cursor"]
+        if new_repos < 20: # i.e. run out, because that's the limit
+            break
+        variables["repo_after"] = cursor
+    return repos
+
 def get_vulnerabilities(github, org):
     query = '''
 query ($org: String!, $repo_after: String) {
@@ -140,8 +181,8 @@ query ($org: String!, $repo_after: String) {
 @login_required
 def organisation(req, org):
     org = Organisation.objects.get(id=org)
-    vuln = get_vulnerabilities(get_github(req), org)
-    raise Exception(vuln)
+    repos = get_repos(get_github(req), org)
+    return render(req, "organisation.html", {"repos": repos})
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
