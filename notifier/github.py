@@ -2,6 +2,8 @@ from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import redirect
 from .models import GithubUser
+import json
+from django.contrib import auth
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
@@ -27,6 +29,6 @@ def callback(req):
     user.username = info["login"]
     user.oauth_token = json.dumps(token)
     user.save()
-    login(req, user)
+    auth.login(req, user)
 
     return redirect("/")
