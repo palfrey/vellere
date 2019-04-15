@@ -14,12 +14,10 @@ def update_slack():
         sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack=link)])
         for v in vulns:
             if v not in sent:
-                message = f"{v.severity} vulnerability in {v.repo.org.name}/{v.repo.name} package {v.package}: {v.description}"
+                message = f"{v.severity} vulnerability in <{v.repo.web_url()}|{v.repo.org.login}/{v.repo.name}> package {v.package} versions '{v.vulnerableVersions}' ('{v.requirements}' required in {v.manifest_path}) <{v.url}|{v.description}>"
                 res = slack_session.post("https://slack.com/api/chat.postMessage", json={
                     "channel": link.channel,
                     "text": message
                 })
                 res.raise_for_status()
-                #raise Exception(message)
-        raise Exception(sent)
-    raise Exception
+                SlackVulnerabilitySent(slack=link, vulnerability=v).save()

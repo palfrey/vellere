@@ -68,6 +68,9 @@ class Repository(models.Model):
         else:
             return "%d vulnerabilities - updated %s" % (vuln_count, update_when)
 
+    def web_url(self):
+        return f"https://github.com/{self.org.login}/{self.name}"
+
     def __str__(self):
         return self.name
 
@@ -102,7 +105,7 @@ class SlackVulnerabilitySent(models.Model):
     vulnerability = models.ForeignKey(Vulnerability, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "(%s, %s)" % (self.slack.name, self.vulnerability.id)
+        return "(%s, %s)" % (self.slack.slack.name, self.vulnerability.id)
 
     class Meta:
         indexes = [
