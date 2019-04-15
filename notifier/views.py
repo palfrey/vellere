@@ -207,12 +207,3 @@ def repository(req, org, repo):
     linked_slacks = [s.slack for s in slack_links]
     slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
     return render(req, "repository.html", {"organisation": organisation, "repository": repository, "vulns": vulns, "slack_links": slack_links, "slacks": slack_instances})
-
-@login_required
-@require_POST
-def slack_repo_link(req, org, repo):
-    organisation = get_object_or_404(Organisation, login=org)
-    repository = get_object_or_404(Repository, name=repo, org=organisation)
-    slack = get_object_or_404(SlackInstance, team_id=req.POST["slack"])
-    SlackRepoLink(repo=repository, slack=slack, channel=req.POST["channel"]).save()
-    return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))

@@ -1,3 +1,30 @@
+<script
+  src="https://code.jquery.com/jquery-3.4.0.min.js"
+  integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg="
+  crossorigin="anonymous"></script>
+{{ csrf_input }}
+<script>
+var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+function delete_link(url) {
+    $.ajax({
+        method: 'DELETE',
+        url: url,
+    }).done(function() {
+        location.reload();
+    });
+}
+</script>
 <h1>{{ organisation.name }} - {{ repository.name }} </h1>
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
@@ -6,7 +33,9 @@
 <h2>Sending to:</h2>
 <ul>
     {% for link in slack_links %}
-        <li>{{ link.channel }} on {{ link.slack.name }}</li>
+        <li>
+            {{ link.channel }} on {{ link.slack.name }} <a href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
+        </li>
     {% endfor %}
 </ul>
 {% endif %}
@@ -22,6 +51,7 @@
     <input type="submit" value="Link Slack instance" />
 </form>
 {% endif %}
+<a href="{{ url('slack_login', kwargs={'redir': url('repository', kwargs={'org': organisation.login, 'repo': repository.name})}) }}">Link to new Slack</a>
 
 {% if vulns %}
 <h2>Vulnerabilities:</h2>

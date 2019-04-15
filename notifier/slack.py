@@ -1,10 +1,12 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
-from django.shortcuts import redirect
-from .models import SlackInstance
+from django.shortcuts import redirect, get_object_or_404
+from .models import SlackInstance, SlackRepoLink
 from django.urls import reverse
 import json
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST, require_http_methods
+from django.http import HttpResponse
 
 authorization_base_url = 'https://slack.com/oauth/authorize'
 token_url = 'https://slack.com/api/oauth.access'
@@ -33,3 +35,18 @@ def callback(req, redir):
     instance.save()
 
     return redirect("/%s" % redir)
+
+@login_required
+@require_POST
+def repo_link(req, org, repo):
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    slack = get_object_or_404(SlackInstance, team_id=req.POST["slack"])
+    SlackRepoLink(repo=repository, slack=slack, channel=req.POST["channel"]).save()
+    return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
+
+@login_required
+@require_http_methods(["DELETE"])
+def repo_link_delete(req, id):
+    get_object_or_404(SlackRepoLink, id=id).delete()
+    return HttpResponse(status=204)
