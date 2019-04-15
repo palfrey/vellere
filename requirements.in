@@ -3,5 +3,6 @@ django
 requests_oauthlib
 jinja2
 humanize
+django-crontab
 
 pip-tools

@@ -1,7 +1,7 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import redirect, get_object_or_404
-from .models import SlackInstance, SlackRepoLink
+from .models import SlackInstance, SlackRepoLink, Organisation, Repository
 from django.urls import reverse
 import json
 from django.contrib.auth.decorators import login_required
@@ -11,16 +11,27 @@ from django.http import HttpResponse
 authorization_base_url = 'https://slack.com/oauth/authorize'
 token_url = 'https://slack.com/api/oauth.access'
 
+def session(state=None, instance=None, req=None):
+    if instance:
+        token = json.loads(instance.oauth_token)
+    else:
+        token = None
+    if req:
+        redirect_uri = req.build_absolute_uri(reverse("slack_callback", args=[redir]))
+    else:
+        redirect_uri = None
+    return OAuth2Session(settings.SLACK_CLIENT_ID, state=state, token=token, scope=['chat:write:bot', 'channels:read', 'users:read'], redirect_uri=redirect_uri)
+
 @login_required
 def login(req, redir):
-    slack = OAuth2Session(settings.SLACK_CLIENT_ID, scope=['chat:write:bot', 'channels:read', 'users:read'], redirect_uri=req.build_absolute_uri(reverse("slack_callback", args=[redir])))
+    slack = session(req=req)
     authorization_url, state = slack.authorization_url(authorization_base_url)
     req.session['slack_oauth_state'] = state
     return redirect(authorization_url)
 
 @login_required
 def callback(req, redir):
-    slack = OAuth2Session(settings.SLACK_CLIENT_ID, state=req.session['slack_oauth_state'], redirect_uri=req.build_absolute_uri(reverse("slack_callback", args=[redir])))
+    slack = session(state=req.session['slack_oauth_state'], req=req)
     token = slack.fetch_token(token_url, client_secret=settings.SLACK_CLIENT_SECRET,
                                authorization_response=req.get_full_path())
 
