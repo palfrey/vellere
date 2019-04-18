@@ -1,7 +1,7 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import redirect
-from .models import GithubUser
+from .models import GithubUser, Organisation
 import json
 from django.contrib import auth
 
@@ -21,6 +21,7 @@ def callback(req):
                                authorization_response=req.get_full_path())
 
     info = github.get('https://api.github.com/user').json()
+
     try:
         user = GithubUser.objects.get(id=info["node_id"])
     except GithubUser.DoesNotExist:
@@ -29,6 +30,15 @@ def callback(req):
     user.username = info["login"]
     user.oauth_token = json.dumps(token)
     user.save()
+
+    try:
+        org = Organisation.objects.get(id=info["node_id"])
+    except Organisation.DoesNotExist:
+        org = Organisation(id=info["node_id"])
+    org.login = info["login"]
+    org.name = info["name"]
+    org.save()
+
     auth.login(req, user)
 
     return redirect("/")

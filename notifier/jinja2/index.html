@@ -1,4 +1,4 @@
-{{ user }}<br />
+<a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
 
 <ul>
 {% for org in orgs %}
