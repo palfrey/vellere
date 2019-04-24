@@ -8,15 +8,16 @@ certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via pip-tools
 django-crontab==0.7.1
-django==2.1.7
+django==2.2
 humanize==0.5.1
-idna==2.7                 # via requests
-jinja2==2.10
+idna==2.8                 # via requests
+jinja2==2.10.1
 markupsafe==1.1.1         # via jinja2
 oauthlib==3.0.1           # via requests-oauthlib
-pip-tools==3.5.0
-pytz==2018.9              # via django
+pip-tools==3.6.0
+pytz==2019.1              # via django
 requests-oauthlib==1.2.0
-requests==2.19.1
+requests==2.21.0
 six==1.12.0               # via pip-tools
-urllib3==1.23             # via requests
+sqlparse==0.3.0           # via django
+urllib3==1.24.2           # via requests

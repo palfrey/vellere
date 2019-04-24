@@ -60,6 +60,13 @@ TEMPLATES = [
             'environment': 'notifier.jinja2.environment'
         },
     },
+    { # For admin
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': ['django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages']
+        }
+    },
 ]
 
 WSGI_APPLICATION = 'vellere.wsgi.application'
