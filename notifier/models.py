@@ -35,6 +35,7 @@ class Organisation(models.Model):
     login = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     repos_updated = models.DateTimeField(null=True)
+    user_organisation = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

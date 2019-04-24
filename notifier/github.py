@@ -37,6 +37,7 @@ def callback(req):
         org = Organisation(id=info["node_id"])
     org.login = info["login"]
     org.name = info["name"]
+    org.user_organisation = True
     org.save()
 
     auth.login(req, user)

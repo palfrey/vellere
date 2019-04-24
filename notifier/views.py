@@ -70,21 +70,40 @@ def index(req):
     return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
 
 def get_repos(github, org):
-    query = """
-query ($org: String!, $repo_after: String) {
-  organization(login: $org) {
-    repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
-      edges {
-        cursor
-        node {
-          id
-          name
+    if org.user_organisation:
+      key = "user"
+      query = """
+  query ($org: String!, $repo_after: String) {
+    user(login: $org) {
+      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
         }
       }
     }
   }
-}
-    """
+      """
+    else:
+      key = "organization"
+      query = """
+  query ($org: String!, $repo_after: String) {
+    organization(login: $org) {
+      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}) {
+        edges {
+          cursor
+          node {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+      """
     variables = {
         "repo_after": None,
         "org": org.login
@@ -93,7 +112,7 @@ query ($org: String!, $repo_after: String) {
     while True:
         new_repos = 0
         cursor = None
-        for data in run_graphql(github, query, variables)["organization"]["repositories"]["edges"]:
+        for data in run_graphql(github, query, variables)[key]["repositories"]["edges"]:
             node = data["node"]
             try:
                 repo = Repository.objects.get(id=node["id"])
