@@ -25,7 +25,7 @@ function delete_link(url) {
     });
 }
 </script>
-<h1>{{ organisation.name }} - {{ repository.name }} </h1>
+<h1><a href="https://github.com/{{ organisation.login }}/{{ repository.name }}">{{ organisation.login }}/{{ repository.name }}</a></h1>
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
 
@@ -51,7 +51,7 @@ function delete_link(url) {
     <input type="submit" value="Link Slack instance" />
 </form>
 {% endif %}
-<a href="{{ url('slack_login', kwargs={'redir': url('repository', kwargs={'org': organisation.login, 'repo': repository.name})}) }}">Link to new Slack</a>
+<a href="{{ url('slack_login', kwargs={'redir': url('repository', kwargs={'org': organisation.login, 'repo': repository.name})}) }}">Link to new Slack</a><br/>
 
 {% if vulns %}
 <h2>Vulnerabilities:</h2>

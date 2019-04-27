@@ -1,5 +1,6 @@
-<a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
+User repositories: <a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
 
+Organisation repositories:
 <ul>
 {% for org in orgs %}
 <li><a href="{{ url('organisation', kwargs={'org': org.login}) }}">{{ org.name }}</a></li>
