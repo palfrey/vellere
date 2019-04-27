@@ -1,3 +1,5 @@
+{% extends "layout.html" %}
+{% block body %}
 User repositories: <a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
 
 Organisation repositories:
@@ -6,3 +8,4 @@ Organisation repositories:
 <li><a href="{{ url('organisation', kwargs={'org': org.login}) }}">{{ org.name }}</a></li>
 {% endfor %}
 </ul>
+{% endblock %}

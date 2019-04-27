@@ -1,21 +1,7 @@
-<script
-  src="https://code.jquery.com/jquery-3.4.0.min.js"
-  integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg="
-  crossorigin="anonymous"></script>
+{% extends "layout.html" %}
+{% block body %}
 {{ csrf_input }}
 <script>
-var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-function csrfSafeMethod(method) {
-    // these HTTP methods do not require CSRF protection
-    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-}
-$.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-        }
-    }
-});
 function delete_link(url) {
     $.ajax({
         method: 'DELETE',
@@ -64,3 +50,4 @@ function delete_link(url) {
 {% else %}
 No vulnerabilities known. They may be disabled for this repo. Please check the <a href="https://github.com/{{ organisation.login }}/{{ repository.name }}/settings">repository settings</a> under "Data services"
 {% endif %}
+{% endblock %}

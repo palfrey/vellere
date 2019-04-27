@@ -1,3 +1,5 @@
+{% extends "layout.html" %}
+{% block body %}
 <h1><a href="https://github.com/{{ organisation.login }}">{{ organisation.login }} ({{organisation.name}})</a></h1>
 
 <a href="{{ url('index') }}">Go back to list of organisations</a>
@@ -9,3 +11,4 @@
 </ul>
 
 <a href="{{ url('index') }}">Go back to list of organisations</a>
+{% endblock %}
