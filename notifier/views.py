@@ -56,8 +56,17 @@ def index(req):
     if req.user.orgs_updated == None or req.user.orgs_updated < max_age:
         orgs = get_organisations(get_github(req), req.user)
     else:
-        orgs = [ou.org for ou in OrganisationUser.objects.filter(user=req.user)]
-    return render(req, 'index.html', {'user': req.user, 'orgs': orgs, 'slacks': SlackInstance.objects.all()})
+        orgs = [ou.org for ou in OrganisationUser.objects.select_related("org").filter(user=req.user)]
+    all_orgs = orgs + [Organisation.objects.get(login=req.user.username)]
+    org_links = SlackOrgLink.objects.filter(org__in=all_orgs)
+    repo_links = SlackRepoLink.objects.filter(repo__org__in=all_orgs)
+    return render(req, 'index.html', {
+        'user': req.user,
+        'orgs': orgs,
+        'slacks': SlackInstance.objects.all(),
+        'org_links': org_links,
+        'repo_links': repo_links
+    })
 
 def get_repos(github, org):
     if org.user_organisation:

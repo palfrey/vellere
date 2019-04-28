@@ -21,4 +21,22 @@
 No Slack instances linked yet<br />
 {% endif %}
 <a href="{{ url('slack_login', kwargs={'redir': url('index')}) }}">Link to new Slack</a><br/>
+
+{% if org_links %}
+    <h3>Organisation links:</h3>
+    <ul>
+        {% for org_link in org_links %}
+        <li>{{org_link}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if repo_links %}
+    <h3>Repository links:</h3>
+    <ul>
+        {% for repo_link in repo_links %}
+        <li>{{repo_link}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 {% endblock %}
