@@ -1,7 +1,7 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import redirect, get_object_or_404
-from .models import SlackInstance, SlackRepoLink, Organisation, Repository
+from .models import SlackInstance, SlackOrgLink, SlackRepoLink, Organisation, Repository
 from django.urls import reverse
 import json
 from django.contrib.auth.decorators import login_required
@@ -47,6 +47,20 @@ def callback(req, redir):
     instance.save()
 
     return redirect(redir)
+
+@login_required
+@require_POST
+def org_link(req, org):
+    organisation = get_object_or_404(Organisation, login=org)
+    slack = get_object_or_404(SlackInstance, team_id=req.POST["slack"])
+    SlackOrgLink(org=organisation, slack=slack, channel=req.POST["channel"]).save()
+    return redirect(reverse('organisation', kwargs={'org': organisation.login}))
+
+@login_required
+@require_http_methods(["DELETE"])
+def org_link_delete(req, id):
+    get_object_or_404(SlackOrgLink, id=id).delete()
+    return HttpResponse(status=204)
 
 @login_required
 @require_POST

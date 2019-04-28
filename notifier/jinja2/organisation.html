@@ -2,7 +2,31 @@
 {% block body %}
 <h1><a href="https://github.com/{{ organisation.login }}">{{ organisation.login }} ({{organisation.name}})</a></h1>
 
-<a href="{{ url('index') }}">Go back to list of organisations</a>
+<a href="{{ url('index') }}">Go back to list of organisations</a><br/>
+
+{% if slack_links %}
+<h2>Sending to:</h2>
+<ul>
+    {% for link in slack_links %}
+        <li>
+            {{ link.channel }} on {{ link.slack.name }} <a href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if slacks %}
+<form method="POST" action="{{ url('slack_org_link', kwargs={'org': organisation.login})}}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <select name="slack">
+        {% for slack in slacks %}
+        <option value="{{slack.team_id}}">{{ slack.name }}</option>
+        {% endfor %}
+    </select><br />
+    <input type="text" name="channel" placeholder="Write channel name or username" required /><br />
+    <input type="submit" value="Link Slack instance" />
+</form>
+{% endif %}
+<a href="{{ url('slack_login', kwargs={'redir': url('organisation', kwargs={'org': organisation.login})}) }}">Link to new Slack</a><br/>
 
 <ul>
 {% for repo in repos %}

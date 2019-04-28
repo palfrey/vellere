@@ -130,7 +130,10 @@ def organisation(req, org):
     else:
         repos = list(organisation.repository_set.all())
     repos.sort(key=lambda x: x.name.lower())
-    return render(req, "organisation.html", {"organisation": organisation, "repos": repos})
+    slack_links = SlackOrgLink.objects.filter(org=organisation)
+    linked_slacks = [s.slack for s in slack_links]
+    slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
+    return render(req, "organisation.html", {"organisation": organisation, "repos": repos, "slacks": slack_instances, "slack_links": slack_links})
 
 @login_required
 @require_GET

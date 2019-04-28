@@ -6,16 +6,6 @@
 {% endblock %}
 {% block body %}
 {{ csrf_input }}
-<script>
-function delete_link(url) {
-    $.ajax({
-        method: 'DELETE',
-        url: url,
-    }).done(function() {
-        location.reload();
-    });
-}
-</script>
 <h1><a href="https://github.com/{{ organisation.login }}/{{ repository.name }}">{{ organisation.login }}/{{ repository.name }}</a></h1>
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />

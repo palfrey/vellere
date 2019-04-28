@@ -41,6 +41,20 @@ class Organisation(models.Model):
     def __str__(self):
         return self.name
 
+class SlackOrgLink(models.Model):
+    slack = models.ForeignKey(SlackInstance, on_delete=models.CASCADE)
+    org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
+    channel = models.CharField(max_length=255)
+
+    def __str__(self):
+        return "(%s, %s, %s)" % (self.slack.name, self.org.login, self.channel)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['slack', 'org'], name="slack_org_link_idx"),
+        ]
+        unique_together = (('slack', 'org'))
+
 class OrganisationUser(models.Model):
     user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
@@ -103,14 +117,16 @@ class Vulnerability(models.Model):
     package = models.CharField(max_length=255)
 
 class SlackVulnerabilitySent(models.Model):
-    slack = models.ForeignKey(SlackRepoLink, on_delete=models.CASCADE)
+    slack_org = models.ForeignKey(SlackOrgLink, on_delete=models.CASCADE, null=True)
+    slack_repo = models.ForeignKey(SlackRepoLink, on_delete=models.CASCADE, null=True)
     vulnerability = models.ForeignKey(Vulnerability, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "(%s, %s)" % (self.slack.slack.name, self.vulnerability.id)
+        slack = self.slack_org if self.slack_org != None else self.slack_repo
+        return "(%s, %s)" % (slack.slack.name, self.vulnerability.id)
 
     class Meta:
         indexes = [
-            models.Index(fields=['slack', 'vulnerability'], name="slack_vulnerability_idx"),
+            models.Index(fields=['slack_org', 'vulnerability'], name="slack_vulnerability_org_idx"),
+            models.Index(fields=['slack_repo', 'vulnerability'], name="slack_vulnerability_repo_idx"),
         ]
-        unique_together = (('slack', 'vulnerability'))
