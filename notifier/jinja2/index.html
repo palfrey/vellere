@@ -8,4 +8,16 @@ Organisation repositories:
 <li><a href="{{ url('organisation', kwargs={'org': org.login}) }}">{{ org.name }}</a></li>
 {% endfor %}
 </ul>
+
+Slack instances:
+{% if slacks %}
+<ul>
+    {% for slack in slacks %}
+    <li>{{ slack.name }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+No Slack instances linked yet<br />
+{% endif %}
+<a href="{{ url('slack_login', kwargs={'redir': url('index')}) }}">Link to new Slack</a><br/>
 {% endblock %}

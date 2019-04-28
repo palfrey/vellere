@@ -67,7 +67,7 @@ def index(req):
         orgs = get_organisations(get_github(req), req.user)
     else:
         orgs = [ou.org for ou in OrganisationUser.objects.filter(user=req.user)]
-    return render(req, 'index.html', {'user': req.user, 'orgs': orgs})
+    return render(req, 'index.html', {'user': req.user, 'orgs': orgs, 'slacks': SlackInstance.objects.all()})
 
 def get_repos(github, org):
     if org.user_organisation:
