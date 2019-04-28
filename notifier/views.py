@@ -5,22 +5,12 @@ from requests_oauthlib import OAuth2Session
 from .models import *
 from django.contrib.auth import login
 from django.utils import timezone
-import json
 import datetime
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
 
-def get_github(req):
-    return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
-
-def run_graphql(github, query, variables={}):
-    res = github.post('https://api.github.com/graphql',
-        json={"query": query, "variables": variables},
-        headers={
-            "Accept": "application/vnd.github.vixen-preview" # Vulnerability alert preview https://developer.github.com/v4/previews/#repository-vulnerability-alerts
-        })
-    res.raise_for_status()
-    return res.json()['data']
+from .vulnerabilities import get_vulnerabilities
+from .helpers import get_github, run_graphql
 
 def get_organisations(github, user):
     data = run_graphql(github, """
@@ -130,75 +120,6 @@ def get_repos(github, org):
     org.repos_updated = timezone.now()
     org.save()
     return repos
-
-def get_vulnerabilities(github, org, repo):
-    query = '''
-query ($org: String!, $repo: String!, $vuln_after: String) {
-  repository(owner: $org, name: $repo) {
-    vulnerabilityAlerts(first: 20, after: $vuln_after) {
-      edges {
-        cursor
-        node {
-          id
-          vulnerableManifestPath
-          vulnerableRequirements
-          dismisser {
-            id
-          }
-          securityVulnerability {
-            severity
-            advisory {
-              description
-              references {
-                url
-              }
-            }
-            vulnerableVersionRange
-            package {
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-}
-    '''
-    variables = {
-        "org": org.login,
-        "repo": repo.name,
-        "vuln_after": None
-    }
-    vulns = []
-    while True:
-        new_vulns = 0
-        for data in run_graphql(github, query, variables)["repository"]["vulnerabilityAlerts"]["edges"]:
-            node = data["node"]
-            try:
-                vuln = Vulnerability.objects.get(id=node["id"])
-            except Vulnerability.DoesNotExist:
-                vuln = Vulnerability(id=node["id"])
-            vuln.repo = repo
-            vuln.manifest_path = node["vulnerableManifestPath"]
-            vuln.requirements = node["vulnerableRequirements"]
-            vuln.dismissed = node["dismisser"] != None
-            sec = node["securityVulnerability"]
-            vuln.severity = sec["severity"]
-            adv = sec["advisory"]
-            vuln.description = adv["description"]
-            vuln.url = adv["references"][0]["url"]
-            vuln.vulnerableVersions = sec["vulnerableVersionRange"]
-            vuln.package = sec["package"]["name"]
-            vuln.save()
-            vulns.append(vuln)
-            cursor = data["cursor"]
-            new_vulns +=1
-        if new_vulns < 20: # i.e. run out, because that's the limit
-            break
-        variables["vuln_after"] = cursor
-    repo.vuln_updated = timezone.now()
-    repo.save()
-    return vulns
 
 @login_required
 def organisation(req, org):
