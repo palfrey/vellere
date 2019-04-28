@@ -26,6 +26,7 @@ class GithubUser(models.Model):
 
 class SlackInstance(models.Model):
     team_id = models.CharField(max_length=32, primary_key=True)
+    url = models.URLField()
     name = models.CharField(max_length=255)
     github_user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
     oauth_token = models.CharField(max_length=255)

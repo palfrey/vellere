@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block nav %}
 <li class="nav-item">
- <a class="nav-link" href="{{ url('organisation', kwargs={'org': organisation.login}) }}">{{ organisation.login}}</a>
+ <a class="nav-link active" href="{{ url('organisation', kwargs={'org': organisation.login}) }}">{{ organisation.login}}</a>
 </li>
 {% endblock %}
 {% block body %}

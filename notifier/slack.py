@@ -32,7 +32,6 @@ def login(req, redir):
 @login_required
 def callback(req, redir):
     slack = session(state=req.session['slack_oauth_state'], req=req, redir=redir)
-    #raise Exception(slack.__dict__)
     token = slack.fetch_token(token_url, client_secret=settings.SLACK_CLIENT_SECRET,
                                authorization_response=req.get_full_path())
 
@@ -43,6 +42,7 @@ def callback(req, redir):
         instance = SlackInstance(team_id=info["team_id"])
     instance.github_user = req.user
     instance.name = info["team"]
+    instance.url = info["url"]
     instance.oauth_token = json.dumps(token)
     instance.save()
 
