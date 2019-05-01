@@ -1,6 +1,7 @@
 from .helpers import run_graphql
 from django.utils import timezone
 from .models import Vulnerability, SlackVulnerabilitySent
+import datetime
 
 def get_vulnerabilities(github, org, repo):
     query = '''
@@ -71,12 +72,13 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
     repo.save()
     return vulns
 
-def not_sent(link):
+def repo_not_sent(link):
+    max_age = timezone.now() - datetime.timedelta(days=1)
     if link.repo.vuln_updated == None or link.repo.vuln_updated < max_age:
         vulns = get_vulnerabilities(get_github(req), link.repo.org.name, link.repo.name)
     else:
         vulns = list(link.repo.vulnerability_set.all())
-    sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack=link)])
+    sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)])
     for v in vulns:
         if v not in sent:
             yield v
