@@ -169,5 +169,6 @@ def org_link(req, id):
 @require_GET
 def repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
-    missing = list(repo_not_sent(link))
+    github = get_github(req)
+    missing = list(repo_not_sent(github, link))
     return render(req, "repo_link.html", {"link": link, "missing": missing})
