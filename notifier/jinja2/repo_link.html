@@ -9,6 +9,13 @@
 {% endblock %}
 {% block body %}
 {{ csrf_input }}
-{{ link.slack }}<br />
-{{ missing }}
+Slack link: {{ link.slack.name }} to channel {{ link.channel }} <br />
+{% if missing %}
+    <h3>Unsent vulnerabilities</h3>
+    <ul>
+    {% for item in missing %}
+    <li>{{ item | safe}}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
 {% endblock %}

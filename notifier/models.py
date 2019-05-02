@@ -116,6 +116,9 @@ class Vulnerability(models.Model):
     vulnerableVersions = models.CharField(max_length=64)
     package = models.CharField(max_length=255)
 
+    def __str__(self):
+        return f"{self.severity}: {self.package} versions '{self.vulnerableVersions}' ('{self.requirements}' required in {self.manifest_path}) has <a href=\"{self.url}\">{self.description}</a>".format(self=self)
+
 class SlackVulnerabilitySent(models.Model):
     slack_org = models.ForeignKey(SlackOrgLink, on_delete=models.CASCADE, null=True)
     slack_repo = models.ForeignKey(SlackRepoLink, on_delete=models.CASCADE, null=True)
