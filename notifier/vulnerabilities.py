@@ -45,7 +45,11 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
     vulns = []
     while True:
         new_vulns = 0
-        for data in run_graphql(github, query, variables)["repository"]["vulnerabilityAlerts"]["edges"]:
+        ql = run_graphql(github, query, variables)
+        if ql["repository"] == None:
+            # No such repo
+            break
+        for data in ql["repository"]["vulnerabilityAlerts"]["edges"]:
             node = data["node"]
             try:
                 vuln = Vulnerability.objects.get(id=node["id"])
