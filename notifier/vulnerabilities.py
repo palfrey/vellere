@@ -90,7 +90,7 @@ def repo_sent(github, link):
 
 def repo_not_sent(github, link):
     vulns = repo_vulnerabilities(github, link)
-    sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)])
+    sent = repo_sent(github, link)
     for v in vulns:
         if v not in sent:
             yield v
