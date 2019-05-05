@@ -139,5 +139,7 @@ def org_send_for_link(github, link):
     sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_org=link)]
     for repo in link.org.repository_set.all():
         for v in repo_vulnerabilities(github, repo):
+            if v in sent:
+                continue
             send_vuln(slack_session, v, link.channel)
             SlackVulnerabilitySent(slack_org=link, vulnerability=v).save()
