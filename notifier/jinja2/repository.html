@@ -35,7 +35,7 @@
 <a href="{{ url('slack_login', kwargs={'redir': url('repository', kwargs={'org': organisation.login, 'repo': repository.name})}) }}">Link to new Slack</a><br/>
 
 {% if vulns %}
-<h2>Vulnerabilities:</h2>
+<h2>Vulnerabilities (last update {{ repository.last_update()}}):</h2>
 <ul>
 {% for vuln in vulns %}
 <li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>
@@ -43,6 +43,6 @@
 {% endfor %}
 </ul>
 {% else %}
-No vulnerabilities known. They may be disabled for this repo. Please check the <a href="https://github.com/{{ organisation.login }}/{{ repository.name }}/settings">repository settings</a> under "Data services"
+No vulnerabilities known (last update {{ repository.last_update()}}). They may be disabled for this repo. Please check the <a href="https://github.com/{{ organisation.login }}/{{ repository.name }}/settings">repository settings</a> under "Data services"
 {% endif %}
 {% endblock %}

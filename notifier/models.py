@@ -78,11 +78,16 @@ class Repository(models.Model):
         if self.vuln_updated == None:
             return "Never updated"
         vuln_count = self.vulnerability_set.count()
-        update_when = humanize.naturaltime(timezone.now() - self.vuln_updated)
+        update_when = self.last_update()
         if vuln_count == 1:
             return "1 vulnerability - updated %s" % update_when
         else:
             return "%d vulnerabilities - updated %s" % (vuln_count, update_when)
+
+    def last_update(self):
+        if self.vuln_updated == None:
+            return "Never updated"
+        return humanize.naturaltime(timezone.now() - self.vuln_updated)
 
     def web_url(self):
         return f"https://github.com/{self.org.login}/{self.name}"
