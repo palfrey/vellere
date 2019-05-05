@@ -9,7 +9,7 @@ import datetime
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
 
-from .vulnerabilities import get_vulnerabilities, repo_not_sent
+from .vulnerabilities import get_vulnerabilities, repo_not_sent, repo_send_for_link, repo_vulnerabilities, repo_sent
 from .helpers import get_github, run_graphql
 
 def get_organisations(github, user):
@@ -171,4 +171,12 @@ def repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
     github = get_github(req)
     missing = list(repo_not_sent(github, link))
-    return render(req, "repo_link.html", {"link": link, "missing": missing})
+    return render(req, "repo_link.html", {"link": link, "missing": missing, "sent": repo_sent(github, link)})
+
+@login_required
+@require_POST
+def update_repo_link(req, id):
+    link = get_object_or_404(SlackRepoLink, id=id)
+    github = get_github(req)
+    repo_send_for_link(github, link)
+    return redirect(reverse('slack_repo_link_info', kwargs={'id': id}))

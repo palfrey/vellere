@@ -2,6 +2,7 @@ from .helpers import run_graphql
 from django.utils import timezone
 from .models import Vulnerability, SlackVulnerabilitySent
 import datetime
+from .slack import session
 
 def get_vulnerabilities(github, org, repo):
     query = '''
@@ -72,13 +73,35 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
     repo.save()
     return vulns
 
-def repo_not_sent(github, link):
+def repo_vulnerabilities(github, link):
     max_age = timezone.now() - datetime.timedelta(days=1)
     if link.repo.vuln_updated == None or link.repo.vuln_updated < max_age:
         vulns = get_vulnerabilities(github, link.repo.org, link.repo)
     else:
         vulns = list(link.repo.vulnerability_set.all())
+    return vulns
+
+def repo_sent(github, link):
+    vulns = repo_vulnerabilities(github, link)
+    sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)])
+    for v in vulns:
+        if v in sent:
+            yield v
+
+def repo_not_sent(github, link):
+    vulns = repo_vulnerabilities(github, link)
     sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)])
     for v in vulns:
         if v not in sent:
             yield v
+
+def repo_send_for_link(github, link):
+    slack_session = session(instance=link.slack)
+    for v in repo_not_sent(github, link):
+        message = f"{v.severity} vulnerability in <{v.repo.web_url()}|{v.repo.org.login}/{v.repo.name}> package {v.package} versions '{v.vulnerableVersions}' ('{v.requirements}' required in {v.manifest_path}) <{v.url}|{v.description}>"
+        res = slack_session.post("https://slack.com/api/chat.postMessage", json={
+            "channel": link.channel,
+            "text": message
+        })
+        res.raise_for_status()
+        SlackVulnerabilitySent(slack_repo=link, vulnerability=v).save()
