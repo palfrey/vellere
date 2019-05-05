@@ -15,6 +15,7 @@ urlpatterns = [
     path('slack/remove_repo_link/<int:id>', slack.org_link_delete, name="slack_org_link_delete"),
     path('slack/remove_org_link/<int:id>', slack.repo_link_delete, name="slack_repo_link_delete"),
     path('slack/org_link/<int:id>', views.org_link, name="slack_org_link_info"),
+    path('slack/org_link/<int:id>/update', views.update_org_link, name="slack_org_link_update"),
     path('slack/repo_link/<int:id>', views.repo_link, name="slack_repo_link_info"),
     path('slack/repo_link/<int:id>/update', views.update_repo_link, name="slack_repo_link_update"),
 ]

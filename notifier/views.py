@@ -9,7 +9,7 @@ import datetime
 from django.views.decorators.http import require_GET, require_POST
 from django.urls import reverse
 
-from .vulnerabilities import get_vulnerabilities, repo_not_sent, repo_send_for_link, repo_vulnerabilities, repo_sent
+from .vulnerabilities import get_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link
 from .helpers import get_github, run_graphql
 
 def get_organisations(github, user):
@@ -163,14 +163,25 @@ def repository(req, org, repo):
 @login_required
 @require_GET
 def org_link(req, id):
-    raise Exception
+    link = get_object_or_404(SlackOrgLink, id=id)
+    github = get_github(req)
+    missing = org_not_sent(github, link)
+    return render(req, "org_link.html", {"link": link, "missing": missing, "sent": org_sent(github, link)})
+
+@login_required
+@require_POST
+def update_org_link(req, id):
+    link = get_object_or_404(SlackOrgLink, id=id)
+    github = get_github(req)
+    org_send_for_link(github, link)
+    return redirect(reverse('slack_org_link_info', kwargs={'id': id}))
 
 @login_required
 @require_GET
 def repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
     github = get_github(req)
-    missing = list(repo_not_sent(github, link))
+    missing = repo_not_sent(github, link)
     return render(req, "repo_link.html", {"link": link, "missing": missing, "sent": repo_sent(github, link)})
 
 @login_required

@@ -73,35 +73,67 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
     repo.save()
     return vulns
 
-def repo_vulnerabilities(github, link):
+def repo_vulnerabilities(github, repo):
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if link.repo.vuln_updated == None or link.repo.vuln_updated < max_age:
-        vulns = get_vulnerabilities(github, link.repo.org, link.repo)
+    if repo.vuln_updated == None or repo.vuln_updated < max_age:
+        vulns = get_vulnerabilities(github, repo.org, repo)
     else:
-        vulns = list(link.repo.vulnerability_set.all())
+        vulns = list(repo.vulnerability_set.all())
     return vulns
 
+# Doesn't update, because that's an expensive op
+def org_vulnerabilities(github, org):
+    all_vulns = []
+    for repo in org.repository_set.all():
+        all_vulns.extend(repo.vulnerability_set.all())
+    return all_vulns
+
 def repo_sent(github, link):
-    vulns = repo_vulnerabilities(github, link)
-    sent = dict([(x.vulnerability, x) for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)])
+    vulns = repo_vulnerabilities(github, link.repo)
+    sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_repo=link)]
     for v in vulns:
         if v in sent:
             yield v
 
 def repo_not_sent(github, link):
-    vulns = repo_vulnerabilities(github, link)
+    vulns = repo_vulnerabilities(github, link.repo)
     sent = repo_sent(github, link)
     for v in vulns:
         if v not in sent:
             yield v
 
+def org_sent(github, link):
+    vulns = org_vulnerabilities(github, link.org)
+    sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_org=link)]
+    for v in vulns:
+        if v in sent:
+            yield v
+
+def org_not_sent(github, link):
+    vulns = org_vulnerabilities(github, link.org)
+    sent = org_sent(github, link)
+    for v in vulns:
+        if v not in sent:
+            yield v
+
+def send_vuln(slack_session, v, channel):
+    message = f"{v.severity} vulnerability in <{v.repo.web_url()}|{v.repo.org.login}/{v.repo.name}> package {v.package} versions '{v.vulnerableVersions}' ('{v.requirements}' required in {v.manifest_path}) <{v.url}|{v.description}>"
+    res = slack_session.post("https://slack.com/api/chat.postMessage", json={
+        "channel": channel,
+        "text": message
+    })
+    res.raise_for_status()
+
 def repo_send_for_link(github, link):
     slack_session = session(instance=link.slack)
     for v in repo_not_sent(github, link):
-        message = f"{v.severity} vulnerability in <{v.repo.web_url()}|{v.repo.org.login}/{v.repo.name}> package {v.package} versions '{v.vulnerableVersions}' ('{v.requirements}' required in {v.manifest_path}) <{v.url}|{v.description}>"
-        res = slack_session.post("https://slack.com/api/chat.postMessage", json={
-            "channel": link.channel,
-            "text": message
-        })
-        res.raise_for_status()
+        send_vuln(slack_session, v, link.channel)
         SlackVulnerabilitySent(slack_repo=link, vulnerability=v).save()
+
+def org_send_for_link(github, link):
+    slack_session = session(instance=link.slack)
+    sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_org=link)]
+    for repo in link.org.repository_set.all():
+        for v in repo_vulnerabilities(github, repo):
+            send_vuln(slack_session, v, link.channel)
+            SlackVulnerabilitySent(slack_org=link, vulnerability=v).save()

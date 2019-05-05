@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block nav %}
+<li class="nav-item">
+    <a class="nav-link active" href="{{ url('organisation', kwargs={'org': link.org.login}) }}">{{ link.org.login}}</a>
+</li>
+{% endblock %}
+{% block body %}
+<h3>Organisation to Slack link</h3>
+<ul>
+    <li><h4>Organisation: <a href="{{ url('organisation', kwargs={'org': link.org.login}) }}">{{ link.org.login}}</a></h4></li>
+    <li><h4>Slack: {{ link.slack.name }} to channel {{ link.channel }}</h4></li>
+</ul>
+{% if missing %}
+    <h3>Unsent vulnerabilities</h3>
+    <ul>
+    {% for item in missing %}
+    <li><a href="{{ url('repository', kwargs={'org': item.repo.org.login, 'repo': item.repo.name}) }}">{{ item.repo.name}}</a> - {{ item | safe}}</li>
+    {% endfor %}
+    </ul>
+    <form action="{{ url('slack_org_link_update', kwargs={'id': link.id})}}" method="POST">
+        {{ csrf_input }}
+        <input type="submit" value="Update Slack with new vulnerabilties" />
+    </form>
+{% endif %}
+{% if sent %}
+    <h3>Sent vulnerabilities</h3>
+    <ul>
+    {% for item in sent %}
+    <li><a href="{{ url('repository', kwargs={'org': item.repo.org.login, 'repo': item.repo.name}) }}">{{ item.repo.name}}</a> - {{ item | safe}}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
