@@ -8,6 +8,9 @@ from django.contrib import auth
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
 
+def get_github(req):
+    return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
+
 def login(req):
     github = OAuth2Session(settings.GITHUB_CLIENT_ID, scope=['read:user', 'read:org', 'admin:repo_hook', 'repo'])
     authorization_url, state = github.authorization_url(authorization_base_url)

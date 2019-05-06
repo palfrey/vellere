@@ -10,7 +10,8 @@ from django.views.decorators.http import require_GET, require_POST, require_http
 from django.urls import reverse
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
-from .helpers import get_github, run_graphql
+from .helpers import run_graphql
+from .github import get_github
 
 def get_organisations(github, user):
     data = run_graphql(github, """
