@@ -9,7 +9,7 @@ import datetime
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.urls import reverse
 
-from .vulnerabilities import get_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link
+from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import get_github, run_graphql
 
 def get_organisations(github, user):
@@ -151,18 +151,23 @@ def organisation(req, org):
 def repository(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
+    github = get_github(req)
     if req.method == "POST":
-        get_vulnerabilities(get_github(req), organisation, repository)
+        repo_update_and_send(github, repository)
         return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
-    max_age = timezone.now() - datetime.timedelta(days=1)
-    if repository.vuln_updated == None or repository.vuln_updated < max_age or req.method == "POST":
-        get_vulnerabilities(get_github(req), organisation, repository)
-    vulns = list(repository.vulnerability_set.all())
+    vulns = repo_vulnerabilities(github, repository)
     vulns.sort(key=lambda x:x.severity)
+    old_vulns = list(repository.vulnerability_set.filter(resolved=True))
     slack_links = SlackRepoLink.objects.filter(repo=repository)
     linked_slacks = [s.slack for s in slack_links]
     slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
-    return render(req, "repository.html", {"organisation": organisation, "repository": repository, "vulns": vulns, "slack_links": slack_links, "slacks": slack_instances})
+    return render(req, "repository.html", {
+        "organisation": organisation,
+        "repository": repository,
+        "vulns": vulns,
+        "old_vulns": old_vulns,
+        "slack_links": slack_links,
+        "slacks": slack_instances})
 
 @login_required
 @require_GET

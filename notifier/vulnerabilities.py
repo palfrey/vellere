@@ -43,6 +43,7 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
         "vuln_after": None
     }
     vulns = []
+    existing = [x.id for x in repo.vulnerability_set.all()]
     while True:
         new_vulns = 0
         ql = run_graphql(github, query, variables)
@@ -70,25 +71,30 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
             vulns.append(vuln)
             cursor = data["cursor"]
             new_vulns +=1
+            existing.remove(vuln.id)
         if new_vulns < 20: # i.e. run out, because that's the limit
             break
         variables["vuln_after"] = cursor
     repo.vuln_updated = timezone.now()
     repo.save()
+    for id in existing:
+        vuln = Vulnerability.objects.get(id=id)
+        vuln.resolved = True
+        vuln.save()
     return vulns
 
-def repo_vulnerabilities(github, repo):
+def repo_vulnerabilities(github, repo, force_update=False):
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if repo.vuln_updated == None or repo.vuln_updated < max_age:
+    if repo.vuln_updated == None or repo.vuln_updated < max_age or force_update:
         get_vulnerabilities(github, repo.org, repo)
-    vulns = list(repo.vulnerability_set.all())
+    vulns = list(repo.vulnerability_set.filter(resolved=False))
     return vulns
 
 # Doesn't update, because that's an expensive op
 def org_vulnerabilities(github, org):
     all_vulns = []
     for repo in org.repository_set.all():
-        all_vulns.extend(repo.vulnerability_set.all())
+        all_vulns.extend(repo.vulnerability_set.filter(resolved=False))
     return all_vulns
 
 def repo_sent(github, link):
@@ -142,3 +148,8 @@ def org_send_for_link(github, link):
                 continue
             send_vuln(slack_session, v, link.channel)
             SlackVulnerabilitySent(slack_org=link, vulnerability=v).save()
+
+def repo_update_and_send(github, repository):
+    repo_vulnerabilities(github, repository, force_update=True)
+    for link in repository.slackrepolink_set.all():
+        repo_send_for_link(github, link)

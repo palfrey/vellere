@@ -126,6 +126,7 @@ class Vulnerability(models.Model):
     url = models.URLField()
     vulnerableVersions = models.CharField(max_length=64)
     package = models.CharField(max_length=255)
+    resolved = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.severity}: {self.package} versions '{self.vulnerableVersions}' ('{self.requirements}' required in {self.manifest_path}) has <a href=\"{self.url}\">{self.description}</a>".format(self=self)

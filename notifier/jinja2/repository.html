@@ -48,4 +48,15 @@
 {% else %}
 No vulnerabilities known (last update {{ repository.last_update()}}). They may be disabled for this repo. Please check the <a href="https://github.com/{{ organisation.login }}/{{ repository.name }}/settings">repository settings</a> under "Data services"
 {% endif %}
+
+{% if old_vulns %}
+<h2>Resolved Vulnerabilities:</h2>
+<ul>
+{% for vuln in old_vulns %}
+<li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+
 {% endblock %}
