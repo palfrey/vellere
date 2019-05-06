@@ -13,6 +13,9 @@ class GithubUser(models.Model):
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "username"
 
+    def last_updated(self):
+        return humanize.naturaltime(timezone.now() - self.orgs_updated)
+
     def __str__(self):
         return "Github User: %s" % self.username
 
@@ -37,6 +40,9 @@ class Organisation(models.Model):
     name = models.CharField(max_length=255)
     repos_updated = models.DateTimeField(null=True)
     user_organisation = models.BooleanField(default=False)
+
+    def last_updated(self):
+        return humanize.naturaltime(timezone.now() - self.repos_updated)
 
     def __str__(self):
         return self.name

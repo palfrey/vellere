@@ -28,6 +28,7 @@
 {% endif %}
 <a href="{{ url('slack_login', kwargs={'redir': url('organisation', kwargs={'org': organisation.login})}) }}">Link to new Slack</a><br/>
 
+<h2>Repositories (last update {{ organisation.last_updated() }}):</h2>
 <ul>
 {% for repo in repos %}
 <li><a href="{{ url('repository', kwargs={'org': organisation.login, 'repo': repo.name}) }}">{{ repo.name }}</a> ({{repo.vuln_info()}})</li>
