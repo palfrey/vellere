@@ -134,7 +134,7 @@ def get_repos(github, org):
 def organisation(req, org):
     organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if organisation.repos_updated == None or organisation.repos_updated < max_age:
+    if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
         repos = get_repos(get_github(req), organisation)
     else:
         repos = list(organisation.repository_set.all())

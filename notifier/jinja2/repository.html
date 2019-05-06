@@ -5,7 +5,6 @@
 </li>
 {% endblock %}
 {% block body %}
-{{ csrf_input }}
 <h1><a href="https://github.com/{{ organisation.login }}/{{ repository.name }}">{{ organisation.login }}/{{ repository.name }}</a></h1>
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
@@ -22,7 +21,7 @@
 {% endif %}
 {% if slacks %}
 <form method="POST" action="{{ url('slack_repo_link', kwargs={'org': organisation.login, 'repo': repository.name})}}">
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    {{ csrf_input }}
     <select name="slack">
         {% for slack in slacks %}
         <option value="{{slack.team_id}}">{{ slack.name }}</option>
