@@ -13,3 +13,14 @@ def run_graphql(github, query, variables={}):
         })
     res.raise_for_status()
     return res.json()['data']
+
+def session(state=None, instance=None, req=None, redir=None):
+    if instance:
+        token = json.loads(instance.oauth_token)
+    else:
+        token = None
+    if req:
+        redirect_uri = req.build_absolute_uri(reverse("slack_callback", args=[redir]))
+    else:
+        redirect_uri = None
+    return OAuth2Session(settings.SLACK_CLIENT_ID, state=state, token=token, scope=['identify', 'chat:write:bot', 'channels:read', 'users:read'], redirect_uri=redirect_uri)

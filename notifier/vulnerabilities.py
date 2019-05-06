@@ -2,7 +2,7 @@ from .helpers import run_graphql
 from django.utils import timezone
 from .models import Vulnerability, SlackVulnerabilitySent
 import datetime
-from .slack import session
+from .helpers import session
 
 def get_vulnerabilities(github, org, repo):
     query = '''

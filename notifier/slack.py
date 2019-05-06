@@ -7,20 +7,11 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST, require_http_methods
 from django.http import HttpResponse
+from .vulnerabilities import repo_send_for_link
+from .helpers import session, get_github
 
 authorization_base_url = 'https://slack.com/oauth/authorize'
 token_url = 'https://slack.com/api/oauth.access'
-
-def session(state=None, instance=None, req=None, redir=None):
-    if instance:
-        token = json.loads(instance.oauth_token)
-    else:
-        token = None
-    if req:
-        redirect_uri = req.build_absolute_uri(reverse("slack_callback", args=[redir]))
-    else:
-        redirect_uri = None
-    return OAuth2Session(settings.SLACK_CLIENT_ID, state=state, token=token, scope=['identify', 'chat:write:bot', 'channels:read', 'users:read'], redirect_uri=redirect_uri)
 
 @login_required
 def login(req, redir):
@@ -68,7 +59,9 @@ def repo_link(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     slack = get_object_or_404(SlackInstance, team_id=req.POST["slack"])
-    SlackRepoLink(repo=repository, slack=slack, channel=req.POST["channel"]).save()
+    link = SlackRepoLink(repo=repository, slack=slack, channel=req.POST["channel"])
+    link.save()
+    repo_send_for_link(get_github(req), link)
     return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
 
 @login_required
