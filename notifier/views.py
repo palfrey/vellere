@@ -8,6 +8,7 @@ from django.utils import timezone
 import datetime
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
@@ -210,5 +211,6 @@ def add_repo_webhook(req, org, repo):
     if repository.webhook_id == None:
         create_webhook(req, repository)
 
+@csrf_exempt
 def repository_webhook(req, org, repo):
     raise Exception
