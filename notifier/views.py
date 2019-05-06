@@ -6,7 +6,7 @@ from .models import *
 from django.contrib.auth import login
 from django.utils import timezone
 import datetime
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.urls import reverse
 
 from .vulnerabilities import get_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link
@@ -130,7 +130,7 @@ def get_repos(github, org):
     org.save()
     return repos
 
-@login_required
+@require_http_methods(["GET", "POST"])
 def organisation(req, org):
     organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
@@ -145,12 +145,12 @@ def organisation(req, org):
     return render(req, "organisation.html", {"organisation": organisation, "repos": repos, "slacks": slack_instances, "slack_links": slack_links})
 
 @login_required
-@require_GET
+@require_http_methods(["GET", "POST"])
 def repository(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if repository.vuln_updated == None or repository.vuln_updated < max_age:
+    if repository.vuln_updated == None or repository.vuln_updated < max_age or req.method == "POST":
         vulns = get_vulnerabilities(get_github(req), organisation, repository)
     else:
         vulns = list(repository.vulnerability_set.all())

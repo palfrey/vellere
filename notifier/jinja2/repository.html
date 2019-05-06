@@ -3,6 +3,10 @@
 <li class="nav-item">
  <a class="nav-link active" href="{{ url('organisation', kwargs={'org': organisation.login}) }}">{{ organisation.login}}</a>
 </li>
+<form class="form-inline" method="POST" action="{{ url('repository', kwargs={'org': organisation.login, 'repo': repository.name})}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Update Vulnerabilities</button>
+</form>
 {% endblock %}
 {% block body %}
 <h1><a href="https://github.com/{{ organisation.login }}/{{ repository.name }}">{{ organisation.login }}/{{ repository.name }}</a></h1>
