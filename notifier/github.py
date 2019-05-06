@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from .models import GithubUser, Organisation
 import json
 from django.contrib import auth
+from django.urls import reverse
 
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
@@ -46,3 +47,24 @@ def callback(req):
     auth.login(req, user)
 
     return redirect("/")
+
+def create_webhook(req, repo):
+    github = get_github(req)
+    payload = {
+        "name": "web",
+        "active": True,
+        "events": [
+            "repository_vulnerability_alert",
+        ],
+        "config": {
+            "url": req.build_absolute_uri(reverse('repository_webhook', kwargs={'org': repo.org.login, 'repo': repo.name})),
+            "content_type": "json"
+        }
+    }
+    url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks"
+    res = github.post(url, json=payload)
+    try:
+        res.raise_for_status()
+    except:
+        raise Exception(res.json())
+    return res.json()["id"]

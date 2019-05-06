@@ -79,6 +79,7 @@ class Repository(models.Model):
     org = models.ForeignKey(Organisation, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     vuln_updated = models.DateTimeField(null=True)
+    webhook_id = models.IntegerField(null=True)
 
     def vuln_info(self):
         if self.vuln_updated == None:

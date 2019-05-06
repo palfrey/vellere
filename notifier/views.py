@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
-from .github import get_github
+from .github import get_github, create_webhook
 
 def get_organisations(github, user):
     data = run_graphql(github, """
@@ -201,3 +201,14 @@ def update_repo_link(req, id):
     github = get_github(req)
     repo_send_for_link(github, link)
     return redirect(reverse('slack_repo_link_info', kwargs={'id': id}))
+
+@login_required
+@require_POST
+def add_repo_webhook(req, org, repo):
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    if repository.webhook_id == None:
+        create_webhook(req, repository)
+
+def repository_webhook(req, org, repo):
+    raise Exception

@@ -13,6 +13,13 @@
 
 <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">Go back to list of repositories</a><br />
 
+{% if repository.webhook_id == None %}
+<form class="form-inline" method="POST" action="{{ url('add_repository_webhook', kwargs={'org': organisation.login, 'repo': repository.name})}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Create webhook</button>
+</form>
+{% endif %}
+
 {% if slack_links %}
 <h2>Sending to:</h2>
 <ul>
