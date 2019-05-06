@@ -129,7 +129,11 @@ class Vulnerability(models.Model):
     resolved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.severity}: {self.package} versions '{self.vulnerableVersions}' ('{self.requirements}' required in {self.manifest_path}) has <a href=\"{self.url}\">{self.description}</a>".format(self=self)
+        try:
+            safe_desc = self.description.replace("{", "{{").replace("}", "}}")
+            return f"{self.severity}: {self.package} versions '{self.vulnerableVersions}' ('{self.requirements}' required in {self.manifest_path}) has <a href=\"{self.url}\">{safe_desc}</a>".format(self=self, safe_desc=safe_desc)
+        except IndexError:
+            raise Exception(self.__dict__)
 
 class SlackVulnerabilitySent(models.Model):
     slack_org = models.ForeignKey(SlackOrgLink, on_delete=models.CASCADE, null=True)

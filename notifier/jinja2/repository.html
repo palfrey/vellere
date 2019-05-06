@@ -41,8 +41,7 @@
 <h2>Vulnerabilities (last update {{ repository.last_update()}}):</h2>
 <ul>
 {% for vuln in vulns %}
-<li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>
-</li>
+<li>{{vuln | safe}}</li>
 {% endfor %}
 </ul>
 {% else %}
@@ -53,8 +52,7 @@ No vulnerabilities known (last update {{ repository.last_update()}}). They may b
 <h2>Resolved Vulnerabilities:</h2>
 <ul>
 {% for vuln in old_vulns %}
-<li>{{vuln.severity}}: {{ vuln.package }} versions '{{ vuln.vulnerableVersions }}' ('{{ vuln.requirements }}' required in {{ vuln.manifest_path}}) has <a href="{{ vuln.url }}">{{ vuln.description }}</a>
-</li>
+<li>{{vuln | safe}}</li>
 {% endfor %}
 </ul>
 {% endif %}
