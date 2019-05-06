@@ -80,9 +80,8 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
 def repo_vulnerabilities(github, repo):
     max_age = timezone.now() - datetime.timedelta(days=1)
     if repo.vuln_updated == None or repo.vuln_updated < max_age:
-        vulns = get_vulnerabilities(github, repo.org, repo)
-    else:
-        vulns = list(repo.vulnerability_set.all())
+        get_vulnerabilities(github, repo.org, repo)
+    vulns = list(repo.vulnerability_set.all())
     return vulns
 
 # Doesn't update, because that's an expensive op

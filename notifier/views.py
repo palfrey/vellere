@@ -134,10 +134,12 @@ def get_repos(github, org):
 def organisation(req, org):
     organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
+    if req.method == "POST":
+        get_repos(get_github(req), organisation)
+        return redirect(reverse('organisation', kwargs={'org': organisation.login}))
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
-        repos = get_repos(get_github(req), organisation)
-    else:
-        repos = list(organisation.repository_set.all())
+        get_repos(get_github(req), organisation)
+    repos = list(organisation.repository_set.all())
     repos.sort(key=lambda x: x.name.lower())
     slack_links = SlackOrgLink.objects.filter(org=organisation)
     linked_slacks = [s.slack for s in slack_links]
@@ -149,11 +151,13 @@ def organisation(req, org):
 def repository(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
+    if req.method == "POST":
+        get_vulnerabilities(get_github(req), organisation, repository)
+        return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
     max_age = timezone.now() - datetime.timedelta(days=1)
     if repository.vuln_updated == None or repository.vuln_updated < max_age or req.method == "POST":
-        vulns = get_vulnerabilities(get_github(req), organisation, repository)
-    else:
-        vulns = list(repository.vulnerability_set.all())
+        get_vulnerabilities(get_github(req), organisation, repository)
+    vulns = list(repository.vulnerability_set.all())
     vulns.sort(key=lambda x:x.severity)
     slack_links = SlackRepoLink.objects.filter(repo=repository)
     linked_slacks = [s.slack for s in slack_links]
