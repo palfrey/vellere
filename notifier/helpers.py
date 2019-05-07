@@ -1,6 +1,7 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
 import json
+from django.urls import reverse
 
 def run_graphql(github, query, variables={}):
     res = github.post('https://api.github.com/graphql',
