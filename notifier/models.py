@@ -24,8 +24,29 @@ class GithubUser(models.Model):
         return False
 
     @property
+    def is_active(self):
+        return True
+
+    @property
     def is_authenticated(self):
         return True
+
+    @property
+    def is_staff(self):
+        return self.is_superuser
+
+    @property
+    def is_superuser(self):
+        return self.username == settings.SUPERUSER_LOGIN
+
+    def has_module_perms(self, module):
+        return self.is_superuser
+
+    def has_perm(self, perm, object=None):
+        return self.is_superuser
+
+    def get_username(self):
+        return self.username
 
 class SlackInstance(models.Model):
     team_id = models.CharField(max_length=32, primary_key=True)

@@ -110,6 +110,8 @@ GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "<Missing GITHUB_C
 SLACK_CLIENT_ID = os.environ.get("SLACK_CLIENT_ID", "<Missing SLACK_CLIENT_ID>")
 SLACK_CLIENT_SECRET = os.environ.get("SLACK_CLIENT_SECRET", "<Missing SLACK_CLIENT_SECRET>")
 
+SUPERUSER_LOGIN = os.environ.get("SUPERUSER_LOGIN", None) # Github user with superuser rights
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
