@@ -18,6 +18,12 @@
     {{ csrf_input }}
     <button class="btn btn-outline-success" type="submit">Create webhook</button>
 </form>
+{% else %}
+Github webhook enabled
+<form class="form-inline" method="POST" action="{{ url('delete_repository_webhook', kwargs={'org': organisation.login, 'repo': repository.name})}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Delete webhook</button>
+</form>
 {% endif %}
 
 {% if slack_links %}

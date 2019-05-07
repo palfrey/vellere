@@ -9,8 +9,10 @@ from django.urls import reverse
 authorization_base_url = 'https://github.com/login/oauth/authorize'
 token_url = 'https://github.com/login/oauth/access_token'
 
-def get_github(req):
-    return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(req.user.oauth_token))
+def get_github(req, user=None):
+    if user == None:
+        user = req.user
+    return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(user.oauth_token))
 
 def login(req):
     github = OAuth2Session(settings.GITHUB_CLIENT_ID, scope=['read:user', 'read:org', 'admin:repo_hook', 'repo'])
@@ -57,8 +59,9 @@ def create_webhook(req, repo):
             "repository_vulnerability_alert",
         ],
         "config": {
-            "url": req.build_absolute_uri(reverse('repository_webhook', kwargs={'org': repo.org.login, 'repo': repo.name})),
-            "content_type": "json"
+            "url": req.build_absolute_uri(reverse('repository_webhook', kwargs={'org': repo.org.login, 'repo': repo.name, 'user': req.user.username})),
+            "content_type": "json",
+            "secret": req.user.webhook_secret,
         }
     }
     url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks"
@@ -68,3 +71,12 @@ def create_webhook(req, repo):
     except:
         raise Exception(res.json())
     return res.json()["id"]
+
+def delete_webhook(req, repo):
+    github = get_github(req)
+    url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks/{repo.webhook_id}"
+    res = github.delete(url)
+    try:
+        res.raise_for_status()
+    except:
+        raise Exception(res.json())

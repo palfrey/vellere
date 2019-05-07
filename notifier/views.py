@@ -9,10 +9,13 @@ import datetime
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
-from .github import get_github, create_webhook
+from .github import get_github, create_webhook, delete_webhook
+import hashlib
+import hmac
 
 def get_organisations(github, user):
     data = run_graphql(github, """
@@ -213,6 +216,28 @@ def add_repo_webhook(req, org, repo):
         repository.save()
     return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
 
+@login_required
+@require_POST
+def delete_repo_webhook(req, org, repo):
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    if repository.webhook_id != None:
+        delete_webhook(req, repository)
+        repository.webhook_id = None
+        repository.save()
+    return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
+
 @csrf_exempt
-def repository_webhook(req, org, repo):
-    raise Exception
+def repository_webhook(req, org, repo, user):
+    user = get_object_or_404(GithubUser, username=user)
+    hash = "sha1=%s" % hmac.new(user.webhook_secret.encode('utf-8'), req.body, hashlib.sha1).hexdigest()
+    if "HTTP_X_HUB_SIGNATURE" not in req.META:
+        return HttpResponseBadRequest("No X-Hub-Signature header")
+    header = req.META["HTTP_X_HUB_SIGNATURE"]
+    if header != hash:
+        return HttpResponseBadRequest("%s doesn't equal %s" % (hash, header))
+    github = get_github(req, user)
+    organisation = get_object_or_404(Organisation, login=org)
+    repository = get_object_or_404(Repository, name=repo, org=organisation)
+    repo_update_and_send(github, repository)
+    return HttpResponse()

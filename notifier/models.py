@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 import humanize
 from django.utils import timezone
+import secrets
+from django.conf import settings
 
 class GithubUser(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
@@ -9,6 +11,7 @@ class GithubUser(models.Model):
     name = models.CharField(max_length=255)
     oauth_token = models.CharField(max_length=255)
     orgs_updated = models.DateTimeField(null=True)
+    webhook_secret = models.CharField(max_length=32, default=secrets.token_urlsafe)
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "username"
