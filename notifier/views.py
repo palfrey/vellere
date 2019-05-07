@@ -56,12 +56,13 @@ def get_organisations(github, user):
     return orgs
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def index(req):
     max_age = timezone.now() - datetime.timedelta(days=1)
-    if req.user.orgs_updated == None or req.user.orgs_updated < max_age:
-        orgs = get_organisations(get_github(req), req.user)
-    else:
-        orgs = [ou.org for ou in OrganisationUser.objects.select_related("org").filter(user=req.user)]
+    if req.user.orgs_updated == None or req.user.orgs_updated < max_age or req.method == "POST":
+        get_organisations(get_github(req), req.user)
+        return redirect(reverse("index"))
+    orgs = [ou.org for ou in OrganisationUser.objects.select_related("org").filter(user=req.user)]
     all_orgs = orgs + [Organisation.objects.get(login=req.user.username)]
     org_links = SlackOrgLink.objects.filter(org__in=all_orgs)
     repo_links = SlackRepoLink.objects.filter(repo__org__in=all_orgs)

@@ -1,4 +1,10 @@
 {% extends "layout.html" %}
+{% block nav %}
+  <form class="form-inline" method="POST" action="{{ url('index')}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Update Organisations</button>
+  </form>
+{% endblock %}
 {% block body %}
 <h3>User repositories:</h3>
 <a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
