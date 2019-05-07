@@ -153,3 +153,5 @@ def repo_update_and_send(github, repository):
     repo_vulnerabilities(github, repository, force_update=True)
     for link in repository.slackrepolink_set.all():
         repo_send_for_link(github, link)
+    for link in repository.org.slackorglink_set.all():
+        org_send_for_link(github, link)
