@@ -77,7 +77,7 @@ class SlackOrgLink(models.Model):
     channel = models.CharField(max_length=255)
 
     def __str__(self):
-        return "(%s, %s, %s)" % (self.slack.name, self.org.login, self.channel)
+        return "Slack: %s, Organisation: %s, Channel/User: %s" % (self.slack.name, self.org.login, self.channel)
 
     class Meta:
         indexes = [
@@ -132,7 +132,7 @@ class SlackRepoLink(models.Model):
     channel = models.CharField(max_length=255)
 
     def __str__(self):
-        return "(%s, %s, %s)" % (self.slack.name, self.repo.name, self.channel)
+        return "Slack: %s, Project: %s, Channel/User: %s" % (self.slack.name, self.repo.name, self.channel)
 
     class Meta:
         indexes = [
