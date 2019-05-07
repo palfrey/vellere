@@ -209,7 +209,9 @@ def add_repo_webhook(req, org, repo):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     if repository.webhook_id == None:
-        create_webhook(req, repository)
+        repository.webhook_id = create_webhook(req, repository)
+        repository.save()
+    return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
 
 @csrf_exempt
 def repository_webhook(req, org, repo):
