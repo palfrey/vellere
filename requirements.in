@@ -5,4 +5,7 @@ jinja2
 humanize
 django-crontab
 
+gunicorn
+django-heroku
+
 pip-tools
