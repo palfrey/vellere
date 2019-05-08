@@ -14,7 +14,7 @@ idna==2.8                 # via requests
 jinja2==2.10.1
 markupsafe==1.1.1         # via jinja2
 oauthlib==3.0.1           # via requests-oauthlib
-pip-tools==3.6.0
+pip-tools==3.6.1
 pytz==2019.1              # via django
 requests-oauthlib==1.2.0
 requests==2.21.0
