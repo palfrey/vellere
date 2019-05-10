@@ -59,7 +59,7 @@ class SlackInstance(models.Model):
     url = models.URLField()
     name = models.CharField(max_length=255)
     github_user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
-    oauth_token = models.CharField(max_length=255)
+    oauth_token = models.TextField()
 
 class Organisation(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
