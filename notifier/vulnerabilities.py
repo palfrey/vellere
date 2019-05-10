@@ -71,7 +71,8 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
             vulns.append(vuln)
             cursor = data["cursor"]
             new_vulns +=1
-            existing.remove(vuln.id)
+            if vuln.id in existing:
+                existing.remove(vuln.id)
         if new_vulns < 20: # i.e. run out, because that's the limit
             break
         variables["vuln_after"] = cursor
