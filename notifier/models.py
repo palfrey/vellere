@@ -12,7 +12,7 @@ class GithubUser(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
-    oauth_token = models.CharField(max_length=255)
+    oauth_token = models.TextField()
     orgs_updated = models.DateTimeField(null=True)
     webhook_secret = models.CharField(max_length=32, default=generate_secret)
 
