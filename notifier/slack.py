@@ -25,7 +25,7 @@ def login(req, redir):
 def callback(req, redir):
     slack = session(state=req.session['slack_oauth_state'], req=req, redir=redir)
     token = slack.fetch_token(token_url, client_secret=settings.SLACK_CLIENT_SECRET,
-                               authorization_response=req.get_full_path())
+                               authorization_response=req.build_absolute_uri())
 
     info = slack.get('https://slack.com/api/auth.test').json()
     try:
