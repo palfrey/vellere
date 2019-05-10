@@ -5,13 +5,16 @@ from django.utils import timezone
 import secrets
 from django.conf import settings
 
+def generate_secret():
+    return secrets.token_hex(16)
+
 class GithubUser(models.Model):
     id = models.CharField(max_length=32, primary_key=True)
     username = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     oauth_token = models.CharField(max_length=255)
     orgs_updated = models.DateTimeField(null=True)
-    webhook_secret = models.CharField(max_length=32, default=secrets.token_urlsafe)
+    webhook_secret = models.CharField(max_length=32, default=generate_secret)
 
     REQUIRED_FIELDS = []
     USERNAME_FIELD = "username"
