@@ -24,7 +24,7 @@ def login(req):
 def callback(req):
     github = OAuth2Session(settings.GITHUB_CLIENT_ID, state=req.session['github_oauth_state'])
     token = github.fetch_token(token_url, client_secret=settings.GITHUB_CLIENT_SECRET,
-                               authorization_response=req.get_full_path())
+                               authorization_response=req.build_absolute_uri())
 
     info = github.get('https://api.github.com/user').json()
 
