@@ -1,7 +1,7 @@
 from django.conf import settings
 from requests_oauthlib import OAuth2Session
 from django.shortcuts import redirect
-from .models import GithubUser, Organisation
+from .models import GithubUser, Organisation, OrganisationUser
 import json
 from django.contrib import auth
 from django.urls import reverse
@@ -45,6 +45,10 @@ def callback(req):
     org.name = info["name"]
     org.user_organisation = True
     org.save()
+    try:
+        OrganisationUser.objects.get(user=user, org=org)
+    except OrganisationUser.DoesNotExist:
+        OrganisationUser(user=user, org=org).save()
 
     auth.login(req, user)
 

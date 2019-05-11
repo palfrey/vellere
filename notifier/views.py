@@ -51,7 +51,7 @@ def get_organisations(github, user):
             try:
                 OrganisationUser.objects.get(user=user, org=org)
             except OrganisationUser.DoesNotExist:
-                OrganisationUser.objects.create(user=user, org=org)
+                OrganisationUser(user=user, org=org).save()
     user.orgs_updated = timezone.now()
     user.save()
     return orgs

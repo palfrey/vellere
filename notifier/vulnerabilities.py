@@ -150,8 +150,8 @@ def org_send_for_link(github, link):
             send_vuln(slack_session, v, link.channel)
             SlackVulnerabilitySent(slack_org=link, vulnerability=v).save()
 
-def repo_update_and_send(github, repository):
-    repo_vulnerabilities(github, repository, force_update=True)
+def repo_update_and_send(github, repository, force_update=True):
+    repo_vulnerabilities(github, repository, force_update=force_update)
     for link in repository.slackrepolink_set.all():
         repo_send_for_link(github, link)
     for link in repository.org.slackorglink_set.all():
