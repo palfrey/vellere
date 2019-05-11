@@ -7,12 +7,12 @@
 {% endblock %}
 {% block body %}
 <h3>User repositories:</h3>
-<a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a><br />
+<a href="{{ url('organisation', kwargs={'org': user.username}) }}">{{ user }}</a> ({{ user.user_org().vulnerability_count() }} known vulnerabilities)<br />
 
 <h3>Organisations (last update {{ user.last_updated() }}):</h3>
 <ul>
 {% for org in orgs %}
-<li><a href="{{ url('organisation', kwargs={'org': org.login}) }}">{{ org.name }}</a></li>
+<li><a href="{{ url('organisation', kwargs={'org': org.login}) }}">{{ org.name }}</a> ({{ org.vulnerability_count() }} known vulnerabilities)</li>
 {% endfor %}
 </ul>
 

@@ -25,6 +25,9 @@ class GithubUser(models.Model):
     def __str__(self):
         return "Github User: %s" % self.username
 
+    def user_org(self):
+        return Organisation.objects.filter(login=self.username).filter(user_organisation=True).get()
+
     @property
     def is_anonymous(self):
         return False
@@ -67,6 +70,9 @@ class Organisation(models.Model):
     name = models.CharField(max_length=255)
     repos_updated = models.DateTimeField(null=True)
     user_organisation = models.BooleanField(default=False)
+
+    def vulnerability_count(self):
+        return sum([r.vulnerability_set.count() for r in self.repository_set.all()])
 
     def last_updated(self):
         return humanize.naturaltime(timezone.now() - self.repos_updated)
