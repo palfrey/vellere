@@ -16,6 +16,7 @@ from .helpers import run_graphql
 from .github import get_github, create_webhook, delete_webhook
 import hashlib
 import hmac
+import urllib.parse as parse
 
 def get_organisations(github, user):
     data = run_graphql(github, """
@@ -146,11 +147,27 @@ def organisation(req, org):
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
         get_repos(get_github(req), organisation)
     repos = list(organisation.repository_set.all())
-    repos.sort(key=lambda x: x.name.lower())
+    sort = req.GET.get('sort', 'name')
+    if sort == 'vulnerabilities':
+        repos.sort(key=lambda x: x.vulnerability_set.count(), reverse=True)
+    else: # default to sort by name
+        repos.sort(key=lambda x: x.name.lower())
     slack_links = SlackOrgLink.objects.filter(org=organisation)
     linked_slacks = [s.slack for s in slack_links]
     slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
-    return render(req, "organisation.html", {"organisation": organisation, "repos": repos, "slacks": slack_instances, "slack_links": slack_links})
+    sorts = ["name", "vulnerabilities"]
+    sort_links = {}
+    for sort_option in sorts:
+        if sort == sort_option:
+            sort_links[sort_option] = sort_option
+        else:
+            parsed = parse.urlparse(req.get_full_path())
+            query = parse.parse_qs(parsed.query)
+            query['sort'] = sort_option
+            url = parse.urlunparse(parsed._replace(query=parse.urlencode(query)))
+            sort_links[sort_option] = "<a href=\"%s\">%s</a>" % (url, sort_option)
+    sort_links = " / ".join(sort_links.values())
+    return render(req, "organisation.html", {"organisation": organisation, "repos": repos, "slacks": slack_instances, "slack_links": slack_links, "sort_links": sort_links})
 
 @login_required
 @require_http_methods(["GET", "POST"])
