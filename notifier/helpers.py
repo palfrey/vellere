@@ -21,4 +21,4 @@ def session(state=None, instance=None, req=None, redir=None):
         redirect_uri = req.build_absolute_uri(reverse("slack_callback", args=[redir]))
     else:
         redirect_uri = None
-    return OAuth2Session(settings.SLACK_CLIENT_ID, state=state, token=token, scope=['identify', 'chat:write:bot', 'channels:read', 'users:read'], redirect_uri=redirect_uri)
+    return OAuth2Session(settings.SLACK_CLIENT_ID, state=state, token=token, scope=['identify', 'chat:write:bot'], redirect_uri=redirect_uri)
