@@ -20,7 +20,10 @@
 {% if slacks %}
 <ul>
     {% for slack in slacks %}
-    <li><a href="{{slack.url}}">{{ slack.name }}</a></li>
+    <li>
+        <a href="{{slack.url}}">{{ slack.name }}</a>
+        <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_delete', args=[slack.team_id])}}')">Delete Slack instance</a>
+    </li>
     {% endfor %}
 </ul>
 {% else %}

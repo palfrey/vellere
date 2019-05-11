@@ -70,3 +70,9 @@ def repo_link(req, org, repo):
 def repo_link_delete(req, id):
     get_object_or_404(SlackRepoLink, id=id).delete()
     return HttpResponse(status=204)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete(req, id):
+    get_object_or_404(SlackInstance, team_id=id).delete()
+    return HttpResponse(status=204)

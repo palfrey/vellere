@@ -15,6 +15,7 @@ urlpatterns = [
     path('organisation/<str:org>/<str:repo>/webhook_add', views.add_repo_webhook, name="add_repository_webhook"),
     path('organisation/<str:org>/<str:repo>/webhook_delete', views.delete_repo_webhook, name="delete_repository_webhook"),
     path('organisation/<str:org>/<str:repo>/link', slack.repo_link, name="slack_repo_link"),
+    path('slack/delete/<str:id>', slack.delete, name="slack_delete"),
     path('slack/remove_repo_link/<int:id>', slack.org_link_delete, name="slack_org_link_delete"),
     path('slack/remove_org_link/<int:id>', slack.repo_link_delete, name="slack_repo_link_delete"),
     path('slack/org_link/<int:id>', views.org_link, name="slack_org_link_info"),
