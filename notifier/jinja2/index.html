@@ -32,7 +32,10 @@ No Slack instances linked yet<br />
     <h3>Organisation links:</h3>
     <ul>
         {% for org_link in org_links %}
-        <li><a href="{{url('slack_org_link_info', kwargs={'id':org_link.id})}}">{{org_link}}</a></li>
+        <li>
+            <a href="{{url('slack_org_link_info', kwargs={'id':org_link.id})}}">{{org_link}}</a>
+            <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[org_link.id])}}')">Delete link</a>
+        </li>
         {% endfor %}
     </ul>
 {% endif %}
@@ -41,7 +44,10 @@ No Slack instances linked yet<br />
     <h3>Repository links:</h3>
     <ul>
         {% for repo_link in repo_links %}
-        <li><a href="{{url('slack_repo_link_info', kwargs={'id':repo_link.id})}}">{{repo_link}}</a></li>
+        <li>
+            <a href="{{url('slack_repo_link_info', kwargs={'id':repo_link.id})}}">{{repo_link}}</a>
+            <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[repo_link.id])}}')">Delete link</a>
+        </li>
         {% endfor %}
     </ul>
 {% endif %}

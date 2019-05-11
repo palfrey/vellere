@@ -31,7 +31,8 @@ Github webhook enabled
 <ul>
     {% for link in slack_links %}
         <li>
-            <a href="{{url('slack_repo_link_info', kwargs={'id':link.id})}}">{{ link.channel }} on {{ link.slack.name }}</a> <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
+            <a href="{{url('slack_repo_link_info', kwargs={'id':link.id})}}">{{ link.channel }} on {{ link.slack.name }}</a>
+            <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
         </li>
     {% endfor %}
 </ul>

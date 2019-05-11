@@ -15,7 +15,8 @@
 <ul>
     {% for link in slack_links %}
         <li>
-            {{ link.channel }} on {{ link.slack.name }} <a href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
+            {{ link.channel }} on {{ link.slack.name }}
+            <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
         </li>
     {% endfor %}
 </ul>
