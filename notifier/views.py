@@ -64,6 +64,7 @@ def index(req):
         get_organisations(get_github(req), req.user)
         return redirect(reverse("index"))
     orgs = [ou.org for ou in OrganisationUser.objects.select_related("org").filter(user=req.user, org__user_organisation=False)]
+    orgs.sort(key=lambda o: o.name.lower())
     all_orgs = orgs + [Organisation.objects.get(login=req.user.username)]
     org_links = SlackOrgLink.objects.filter(org__in=all_orgs)
     repo_links = SlackRepoLink.objects.filter(repo__org__in=all_orgs)
