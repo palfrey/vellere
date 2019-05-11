@@ -149,7 +149,7 @@ def organisation(req, org):
     repos = list(organisation.repository_set.all())
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
-        repos.sort(key=lambda x: x.vulnerability_set.count(), reverse=True)
+        repos.sort(key=lambda x: x.vulnerability_set.filter(resolved=False).count(), reverse=True)
     else: # default to sort by name
         repos.sort(key=lambda x: x.name.lower())
     slack_links = SlackOrgLink.objects.filter(org=organisation)

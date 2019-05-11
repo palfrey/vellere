@@ -72,7 +72,7 @@ class Organisation(models.Model):
     user_organisation = models.BooleanField(default=False)
 
     def vulnerability_count(self):
-        return sum([r.vulnerability_set.count() for r in self.repository_set.all()])
+        return sum([r.vulnerability_set.filter(resolved=False).count() for r in self.repository_set.all()])
 
     def last_updated(self):
         return humanize.naturaltime(timezone.now() - self.repos_updated)
@@ -117,7 +117,7 @@ class Repository(models.Model):
     def vuln_info(self):
         if self.vuln_updated == None:
             return "Never updated"
-        vuln_count = self.vulnerability_set.count()
+        vuln_count = self.vulnerability_set.filter(resolved=False).count()
         update_when = self.last_update()
         if vuln_count == 1:
             return "1 vulnerability - updated %s" % update_when
