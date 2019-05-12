@@ -168,7 +168,12 @@ def organisation(req, org):
             url = parse.urlunparse(parsed._replace(query=parse.urlencode(query)))
             sort_links[sort_option] = "<a href=\"%s\">%s</a>" % (url, sort_option)
     sort_links = " / ".join(sort_links.values())
-    return render(req, "organisation.html", {"organisation": organisation, "repos": repos, "slacks": slack_instances, "slack_links": slack_links, "sort_links": sort_links})
+    return render(req, "organisation.html", {
+        "organisation": organisation,
+        "repos": repos,
+        "slacks": slack_instances,
+        "slack_links": slack_links,
+        "sort_links": sort_links})
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -182,15 +187,17 @@ def repository(req, org, repo):
     vulns = repo_vulnerabilities(github, repository)
     vulns.sort(key=lambda x:x.severity)
     old_vulns = list(repository.vulnerability_set.filter(resolved=True))
-    slack_links = SlackRepoLink.objects.filter(repo=repository)
-    linked_slacks = [s.slack for s in slack_links]
+    repo_slack_links = SlackRepoLink.objects.filter(repo=repository)
+    org_slack_links = SlackOrgLink.objects.filter(org=organisation)
+    linked_slacks = [s.slack for s in repo_slack_links]
     slack_instances = [s for s in SlackInstance.objects.all() if s not in linked_slacks]
     return render(req, "repository.html", {
         "organisation": organisation,
         "repository": repository,
         "vulns": vulns,
         "old_vulns": old_vulns,
-        "slack_links": slack_links,
+        "org_slack_links": org_slack_links,
+        "repo_slack_links": repo_slack_links,
         "slacks": slack_instances})
 
 @login_required

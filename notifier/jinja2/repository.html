@@ -26,10 +26,15 @@ Github webhook enabled
 </form>
 {% endif %}
 
-{% if slack_links %}
+{% if repo_slack_links or org_slack_links %}
 <h2>Sending to:</h2>
 <ul>
-    {% for link in slack_links %}
+    {% for link in org_slack_links %}
+        <li>
+            <a href="{{url('slack_org_link_info', kwargs={'id':link.id})}}">{{ link.channel }} on {{ link.slack.name }}</a> (via <a href="{{ url('organisation', kwargs={'org': organisation.login}) }}">organisation</a>)
+        </li>
+    {% endfor %}
+    {% for link in repo_slack_links %}
         <li>
             <a href="{{url('slack_repo_link_info', kwargs={'id':link.id})}}">{{ link.channel }} on {{ link.slack.name }}</a>
             <a class="btn btn-danger" href="#" onclick="javascript:delete_link('{{ url('slack_repo_link_delete', args=[link.id])}}')">Delete link</a>
