@@ -9,3 +9,4 @@ gunicorn
 django-heroku
 
 pip-tools
+django-debug-toolbar
