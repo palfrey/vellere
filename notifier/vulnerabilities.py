@@ -93,10 +93,7 @@ def repo_vulnerabilities(github, repo, force_update=False):
 
 # Doesn't update, because that's an expensive op
 def org_vulnerabilities(github, org):
-    all_vulns = []
-    for repo in org.repository_set.all():
-        all_vulns.extend(repo.vulnerability_set.filter(resolved=False))
-    return all_vulns
+    return Vulnerability.objects.filter(repo__org=org, resolved=False)
 
 def repo_sent(github, link):
     vulns = repo_vulnerabilities(github, link.repo)
@@ -114,7 +111,7 @@ def repo_not_sent(github, link):
 
 def org_sent(github, link):
     vulns = org_vulnerabilities(github, link.org)
-    sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_org=link)]
+    sent = [x.vulnerability for x in SlackVulnerabilitySent.objects.filter(slack_org=link).select_related("vulnerability")]
     for v in vulns:
         if v in sent:
             yield v
