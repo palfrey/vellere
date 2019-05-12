@@ -15,7 +15,7 @@ def get_github(req, user=None):
     return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(user.oauth_token))
 
 def login(req):
-    github = OAuth2Session(settings.GITHUB_CLIENT_ID, scope=['read:user', 'read:org', 'admin:repo_hook', 'repo'])
+    github = OAuth2Session(settings.GITHUB_CLIENT_ID, scope=['read:user', 'read:org', 'admin:org_hook', 'admin:repo_hook', 'repo'])
     authorization_url, state = github.authorization_url(authorization_base_url)
 
     req.session['github_oauth_state'] = state
@@ -54,7 +54,7 @@ def callback(req):
 
     return redirect("/")
 
-def create_webhook(req, repo):
+def create_webhook(req, post_url, webhook_url):
     github = get_github(req)
     payload = {
         "name": "web",
@@ -63,24 +63,38 @@ def create_webhook(req, repo):
             "repository_vulnerability_alert",
         ],
         "config": {
-            "url": req.build_absolute_uri(reverse('repository_webhook', kwargs={'org': repo.org.login, 'repo': repo.name, 'user': req.user.username})),
+            "url": webhook_url,
             "content_type": "json",
             "secret": req.user.webhook_secret,
         }
     }
-    url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks"
-    res = github.post(url, json=payload)
+    res = github.post(post_url, json=payload)
     try:
         res.raise_for_status()
     except:
         raise Exception(res.json())
     return res.json()["id"]
 
-def delete_webhook(req, repo):
+def create_repo_webhook(req, repo):
+    post_url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks"
+    webhook_url = req.build_absolute_uri(reverse('repository_webhook', kwargs={'org': repo.org.login, 'repo': repo.name, 'user': req.user.username}))
+    return create_webhook(req, post_url, webhook_url)
+
+def create_org_webhook(req, org):
+    post_url = f"https://api.github.com/orgs/{org.login}/hooks"
+    webhook_url = req.build_absolute_uri(reverse('organisation_webhook', kwargs={'org': org.login, 'user': req.user.username}))
+    return create_webhook(req, post_url, webhook_url)
+
+def delete_webhook(req, url):
     github = get_github(req)
-    url = f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks/{repo.webhook_id}"
     res = github.delete(url)
     try:
         res.raise_for_status()
     except:
         raise Exception(res.json())
+
+def delete_repo_webhook(req, repo):
+    delete_webhook(req, f"https://api.github.com/repos/{repo.org.login}/{repo.name}/hooks/{repo.webhook_id}")
+
+def delete_org_webhook(req, org):
+    delete_webhook(req, f"https://api.github.com/orgs/{org.login}/hooks/{org.webhook_id}")

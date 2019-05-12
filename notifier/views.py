@@ -13,7 +13,7 @@ from django.http import HttpResponse
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
-from .github import get_github, create_webhook, delete_webhook
+from . import github
 import hashlib
 import hmac
 import urllib.parse as parse
@@ -61,7 +61,7 @@ def get_organisations(github, user):
 def index(req):
     max_age = timezone.now() - datetime.timedelta(days=1)
     if req.user.orgs_updated == None or req.user.orgs_updated < max_age or req.method == "POST":
-        get_organisations(get_github(req), req.user)
+        get_organisations(github.get_github(req), req.user)
         return redirect(reverse("index"))
     orgs = [ou.org for ou in OrganisationUser.objects.select_related("org").filter(user=req.user, org__user_organisation=False)]
     orgs.sort(key=lambda o: o.name.lower())
@@ -163,10 +163,10 @@ def organisation(req, org=None):
     organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
     if req.method == "POST":
-        get_repos(get_github(req), organisation)
+        get_repos(github.get_github(req), organisation)
         return redirect(reverse('organisation', kwargs={'org': organisation.login}))
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
-        get_repos(get_github(req), organisation)
+        get_repos(github.get_github(req), organisation)
     repos = list(organisation.repository_set.all())
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
@@ -202,11 +202,11 @@ def organisation(req, org=None):
 def repository(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
-    github = get_github(req)
+    github_session = github.get_github(req)
     if req.method == "POST":
-        repo_update_and_send(github, repository)
+        repo_update_and_send(github_session, repository)
         return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
-    vulns = repo_vulnerabilities(github, repository)
+    vulns = repo_vulnerabilities(github_session, repository)
     vulns.sort(key=lambda x:x.severity)
     old_vulns = list(repository.vulnerability_set.filter(resolved=True))
     repo_slack_links = SlackRepoLink.objects.filter(repo=repository)
@@ -241,17 +241,17 @@ def has_access_to_repo_link(func):
 @has_access_to_org_link
 def org_link(req, id):
     link = get_object_or_404(SlackOrgLink, id=id)
-    github = get_github(req)
-    missing = org_not_sent(github, link)
-    return render(req, "org_link.html", {"link": link, "missing": missing, "sent": org_sent(github, link)})
+    github_session = github.get_github(req)
+    missing = org_not_sent(github_session, link)
+    return render(req, "org_link.html", {"link": link, "missing": missing, "sent": org_sent(github_session, link)})
 
 @login_required
 @require_POST
 @has_access_to_org_link
 def update_org_link(req, id):
     link = get_object_or_404(SlackOrgLink, id=id)
-    github = get_github(req)
-    org_send_for_link(github, link)
+    github_session = github.get_github(req)
+    org_send_for_link(github_session, link)
     return redirect(reverse('slack_org_link_info', kwargs={'id': id}))
 
 @login_required
@@ -259,17 +259,17 @@ def update_org_link(req, id):
 @has_access_to_repo_link
 def repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
-    github = get_github(req)
-    missing = repo_not_sent(github, link)
-    return render(req, "repo_link.html", {"link": link, "missing": missing, "sent": repo_sent(github, link)})
+    github_session = github.get_github(req)
+    missing = repo_not_sent(github_session, link)
+    return render(req, "repo_link.html", {"link": link, "missing": missing, "sent": repo_sent(github_session, link)})
 
 @login_required
 @require_POST
 @has_access_to_repo_link
 def update_repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
-    github = get_github(req)
-    repo_send_for_link(github, link)
+    github_session = github.get_github(req)
+    repo_send_for_link(github_session, link)
     return redirect(reverse('slack_repo_link_info', kwargs={'id': id}))
 
 @login_required
@@ -280,7 +280,7 @@ def add_repo_webhook(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     if repository.webhook_id == None:
-        repository.webhook_id = create_webhook(req, repository)
+        repository.webhook_id = github.create_repo_webhook(req, repository)
         repository.save()
     return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
 
@@ -292,7 +292,7 @@ def delete_repo_webhook(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     if repository.webhook_id != None:
-        delete_webhook(req, repository)
+        github.delete_repo_webhook(req, repository)
         repository.webhook_id = None
         repository.save()
     return redirect(reverse('repository', kwargs={'org': organisation.login, 'repo': repository.name}))
@@ -306,8 +306,44 @@ def repository_webhook(req, org, repo, user):
     header = req.META["HTTP_X_HUB_SIGNATURE"]
     if header != hash:
         return HttpResponseBadRequest("%s doesn't equal %s" % (hash, header))
-    github = get_github(req, user)
+    github_session = github.get_github(req, user)
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
-    repo_update_and_send(github, repository)
+    repo_update_and_send(github_session, repository)
+    return HttpResponse()
+
+@login_required
+@require_POST
+@has_access_to_org
+def add_org_webhook(req, org=None):
+    organisation = get_object_or_404(Organisation, login=org)
+    if organisation.webhook_id == None:
+        organisation.webhook_id = github.create_org_webhook(req, organisation)
+        organisation.save()
+    return redirect(reverse('organisation', kwargs={'org': organisation.login}))
+
+@login_required
+@require_POST
+@has_access_to_org
+def delete_org_webhook(req, org=None, repo=None):
+    organisation = get_object_or_404(Organisation, login=org)
+    if organisation.webhook_id != None:
+        github.delete_org_webhook(req, organisation)
+        organisation.webhook_id = None
+        organisation.save()
+    return redirect(reverse('organisation', kwargs={'org': organisation.login}))
+
+@csrf_exempt
+def organisation_webhook(req, org, user):
+    user = get_object_or_404(GithubUser, username=user)
+    hash = "sha1=%s" % hmac.new(user.webhook_secret.encode('utf-8'), req.body, hashlib.sha1).hexdigest()
+    if "HTTP_X_HUB_SIGNATURE" not in req.META:
+        return HttpResponseBadRequest("No X-Hub-Signature header")
+    header = req.META["HTTP_X_HUB_SIGNATURE"]
+    if header != hash:
+        return HttpResponseBadRequest("%s doesn't equal %s" % (hash, header))
+    github_session = github.get_github(req, user)
+    org = get_object_or_404(Organisation, login=org)
+    for repo in org.repository_set.all():
+        repo_update_and_send(github_session, repo)
     return HttpResponse()

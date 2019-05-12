@@ -70,6 +70,7 @@ class Organisation(models.Model):
     name = models.CharField(max_length=255)
     repos_updated = models.DateTimeField(null=True)
     user_organisation = models.BooleanField(default=False)
+    webhook_id = models.IntegerField(null=True)
 
     def vulnerability_count(self):
         return sum([r.vulnerability_set.filter(resolved=False).count() for r in self.repository_set.all()])

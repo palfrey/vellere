@@ -10,6 +10,19 @@
 
 <a href="{{ url('index') }}">Go back to list of organisations</a><br/>
 
+{% if organisation.webhook_id == None %}
+<form class="form-inline" method="POST" action="{{ url('add_org_webhook', kwargs={'org': organisation.login})}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Create webhook</button>
+</form>
+{% else %}
+Github webhook enabled
+<form class="form-inline" method="POST" action="{{ url('delete_org_webhook', kwargs={'org': organisation.login})}}" >
+    {{ csrf_input }}
+    <button class="btn btn-outline-success" type="submit">Delete webhook</button>
+</form>
+{% endif %}
+
 {% if slack_links %}
 <h2>Sending to:</h2>
 <ul>
