@@ -10,6 +10,7 @@ from django.views.decorators.http import require_GET, require_POST, require_http
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django.db.models import Count
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
@@ -167,10 +168,10 @@ def organisation(req, org=None):
         return redirect(reverse('organisation', kwargs={'org': organisation.login}))
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
         get_repos(github.get_github(req), organisation)
-    repos = list(organisation.repository_set.all())
+    repos = list(organisation.repository_set.annotate(Count('vulnerability', resolved=False)))
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
-        repos.sort(key=lambda x: x.vulnerability_set.filter(resolved=False).count(), reverse=True)
+        repos.sort(key=lambda x: x.vuln_count, reverse=True)
     else: # default to sort by name
         repos.sort(key=lambda x: x.name.lower())
     slack_links = SlackOrgLink.objects.filter(org=organisation)

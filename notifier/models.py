@@ -73,7 +73,7 @@ class Organisation(models.Model):
     webhook_id = models.IntegerField(null=True)
 
     def vulnerability_count(self):
-        return sum([r.vulnerability_set.filter(resolved=False).count() for r in self.repository_set.all()])
+        return Vulnerability.objects.filter(repo__org=self, resolved=False).count()
 
     def last_updated(self):
         return humanize.naturaltime(timezone.now() - self.repos_updated)
@@ -115,15 +115,20 @@ class Repository(models.Model):
     vuln_updated = models.DateTimeField(null=True)
     webhook_id = models.IntegerField(null=True)
 
+    @property
+    def vuln_count(self):
+        if not hasattr(self, "vulnerability__count"):
+            self.vulnerability__count = self.vulnerability_set.filter(resolved=False).count()
+        return self.vulnerability__count
+
     def vuln_info(self):
         if self.vuln_updated == None:
             return "Never updated"
-        vuln_count = self.vulnerability_set.filter(resolved=False).count()
         update_when = self.last_update()
-        if vuln_count == 1:
+        if self.vuln_count == 1:
             return "1 vulnerability - updated %s" % update_when
         else:
-            return "%d vulnerabilities - updated %s" % (vuln_count, update_when)
+            return "%d vulnerabilities - updated %s" % (self.vuln_count, update_when)
 
     def last_update(self):
         if self.vuln_updated == None:
