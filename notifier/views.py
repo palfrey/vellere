@@ -138,8 +138,28 @@ def get_repos(github, org):
     org.save()
     return repos
 
+def has_access_to_org(func):
+    def wrapper(req, *args, **kwargs):
+        if "org" not in kwargs:
+            raise Exception("Missing 'org' keyword arg")
+        get_object_or_404(OrganisationUser, org__login=kwargs['org'], user=req.user)
+        return func(req, *args, **kwargs)
+    return wrapper
+
+def has_access_to_repo(func):
+    def wrapper(req, *args, **kwargs):
+        if "org" not in kwargs:
+            raise Exception("Missing 'org' keyword arg")
+        if "repo" not in kwargs:
+            raise Exception("Missing 'repo' keyword arg")
+        org_user = get_object_or_404(OrganisationUser, org__login=kwargs['org'], user=req.user)
+        get_object_or_404(Repository, org=org_user.org, name=kwargs['repo'])
+        return func(req, *args, **kwargs)
+    return wrapper
+
 @require_http_methods(["GET", "POST"])
-def organisation(req, org):
+@has_access_to_org
+def organisation(req, org=None):
     organisation = get_object_or_404(Organisation, login=org)
     max_age = timezone.now() - datetime.timedelta(days=1)
     if req.method == "POST":
@@ -177,7 +197,9 @@ def organisation(req, org):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def repository(req, org, repo):
+@has_access_to_org
+@has_access_to_repo
+def repository(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     github = get_github(req)
@@ -200,8 +222,23 @@ def repository(req, org, repo):
         "repo_slack_links": repo_slack_links,
         "slacks": slack_instances})
 
+def has_access_to_org_link(func):
+    def wrapper(req, id):
+        link = get_object_or_404(SlackOrgLink, id=id)
+        get_object_or_404(OrganisationUser, org=link.org, user=req.user)
+        return func(req, id)
+    return wrapper
+
+def has_access_to_repo_link(func):
+    def wrapper(req, id):
+        link = get_object_or_404(SlackRepoLink, id=id)
+        get_object_or_404(OrganisationUser, org=link.repo.org, user=req.user)
+        return func(req, id)
+    return wrapper
+
 @login_required
 @require_GET
+@has_access_to_org_link
 def org_link(req, id):
     link = get_object_or_404(SlackOrgLink, id=id)
     github = get_github(req)
@@ -210,6 +247,7 @@ def org_link(req, id):
 
 @login_required
 @require_POST
+@has_access_to_org_link
 def update_org_link(req, id):
     link = get_object_or_404(SlackOrgLink, id=id)
     github = get_github(req)
@@ -218,6 +256,7 @@ def update_org_link(req, id):
 
 @login_required
 @require_GET
+@has_access_to_repo_link
 def repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
     github = get_github(req)
@@ -226,6 +265,7 @@ def repo_link(req, id):
 
 @login_required
 @require_POST
+@has_access_to_repo_link
 def update_repo_link(req, id):
     link = get_object_or_404(SlackRepoLink, id=id)
     github = get_github(req)
@@ -234,7 +274,9 @@ def update_repo_link(req, id):
 
 @login_required
 @require_POST
-def add_repo_webhook(req, org, repo):
+@has_access_to_org
+@has_access_to_repo
+def add_repo_webhook(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     if repository.webhook_id == None:
@@ -244,7 +286,9 @@ def add_repo_webhook(req, org, repo):
 
 @login_required
 @require_POST
-def delete_repo_webhook(req, org, repo):
+@has_access_to_org
+@has_access_to_repo
+def delete_repo_webhook(req, org=None, repo=None):
     organisation = get_object_or_404(Organisation, login=org)
     repository = get_object_or_404(Repository, name=repo, org=organisation)
     if repository.webhook_id != None:
