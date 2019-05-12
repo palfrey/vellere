@@ -9,8 +9,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     <title>{% block title %}Vellere{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.2/gh-fork-ribbon.min.css" />
+    <style>
+        .github-fork-ribbon.right-top:before {
+            background-color: #f80;
+        }
+    </style>
   </head>
   <body>
+    <a class="github-fork-ribbon right-top" href="https://github.com/palfrey/vellere" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
         <a class="navbar-brand" href="#">Vellere</a>
         <div class="collapse navbar-collapse" id="navbarsExampleDefault">
