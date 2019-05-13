@@ -118,6 +118,7 @@ class Repository(models.Model):
     @property
     def vuln_count(self):
         if not hasattr(self, "vulnerability__count"):
+            raise Exception
             self.vulnerability__count = self.vulnerability_set.filter(resolved=False).count()
         return self.vulnerability__count
 

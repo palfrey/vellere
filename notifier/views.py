@@ -10,7 +10,7 @@ from django.views.decorators.http import require_GET, require_POST, require_http
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
 from .helpers import run_graphql
@@ -168,7 +168,7 @@ def organisation(req, org=None):
         return redirect(reverse('organisation', kwargs={'org': organisation.login}))
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
         get_repos(github.get_github(req), organisation)
-    repos = list(organisation.repository_set.annotate(Count('vulnerability', resolved=False)))
+    repos = list(organisation.repository_set.annotate(vulnerability__count=Count('vulnerability', filter=Q(vulnerability__resolved=False))))
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
         repos.sort(key=lambda x: x.vuln_count, reverse=True)
