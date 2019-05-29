@@ -120,7 +120,10 @@ def get_repos(github, org):
     while True:
         new_repos = 0
         cursor = None
-        for data in run_graphql(github, query, variables)[key]["repositories"]["edges"]:
+        graph = run_graphql(github, query, variables)[key]
+        if graph == None:
+            break
+        for data in graph["repositories"]["edges"]:
             node = data["node"]
             try:
                 repo = Repository.objects.get(id=node["id"])
