@@ -13,49 +13,11 @@ from django.http import HttpResponse
 from django.db.models import Count, Q
 
 from .vulnerabilities import repo_vulnerabilities, repo_not_sent, repo_send_for_link, repo_sent, org_not_sent, org_sent, org_send_for_link, repo_update_and_send
-from .helpers import run_graphql
+from .helpers import get_organisations, get_repos
 from . import github
 import hashlib
 import hmac
 import urllib.parse as parse
-
-def get_organisations(github, user):
-    data = run_graphql(github, """
-{
-  viewer {
-    organizations(first: 10) {
-      edges {
-        cursor
-        node {
-          id
-          name
-          login
-          viewerCanAdminister
-        }
-      }
-    }
-  }
-}
-    """)
-    orgs = []
-    for org in data["viewer"]["organizations"]["edges"]:
-        node = org["node"]
-        if node["viewerCanAdminister"]:
-            try:
-                org = Organisation.objects.get(id=node["id"])
-            except Organisation.DoesNotExist:
-                org = Organisation(id=node["id"])
-            org.name = node["name"]
-            org.login = node["login"]
-            org.save()
-            orgs.append(org)
-            try:
-                OrganisationUser.objects.get(user=user, org=org)
-            except OrganisationUser.DoesNotExist:
-                OrganisationUser(user=user, org=org).save()
-    user.orgs_updated = timezone.now()
-    user.save()
-    return orgs
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -76,71 +38,6 @@ def index(req):
         'org_links': org_links,
         'repo_links': repo_links
     })
-
-def get_repos(github, org):
-    if org.user_organisation:
-      key = "user"
-      query = """
-  query ($org: String!, $repo_after: String) {
-    user(login: $org) {
-      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER) {
-        edges {
-          cursor
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-      """
-    else:
-      key = "organization"
-      query = """
-  query ($org: String!, $repo_after: String) {
-    organization(login: $org) {
-      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER) {
-        edges {
-          cursor
-          node {
-            id
-            name
-          }
-        }
-      }
-    }
-  }
-      """
-    variables = {
-        "repo_after": None,
-        "org": org.login
-    }
-    repos = []
-    while True:
-        new_repos = 0
-        cursor = None
-        graph = run_graphql(github, query, variables)[key]
-        if graph == None:
-            break
-        for data in graph["repositories"]["edges"]:
-            node = data["node"]
-            try:
-                repo = Repository.objects.get(id=node["id"])
-            except Repository.DoesNotExist:
-                repo = Repository(id=node["id"])
-            repo.org = org
-            repo.name = node["name"]
-            repo.save()
-            repos.append(repo)
-            new_repos +=1
-            cursor = data["cursor"]
-        if new_repos < 20: # i.e. run out, because that's the limit
-            break
-        variables["repo_after"] = cursor
-    org.repos_updated = timezone.now()
-    org.save()
-    return repos
 
 def has_access_to_org(func):
     def wrapper(req, *args, **kwargs):
