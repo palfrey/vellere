@@ -60,7 +60,7 @@ def get_organisations(github, user):
 @login_required
 @require_http_methods(["GET", "POST"])
 def index(req):
-    max_age = timezone.now() - datetime.timedelta(days=1)
+    max_age = timezone.now() - datetime.timedelta(days=2)
     if req.user.orgs_updated == None or req.user.orgs_updated < max_age or req.method == "POST":
         get_organisations(github.get_github(req), req.user)
         return redirect(reverse("index"))
@@ -165,7 +165,7 @@ def has_access_to_repo(func):
 @has_access_to_org
 def organisation(req, org=None):
     organisation = get_object_or_404(Organisation, login=org)
-    max_age = timezone.now() - datetime.timedelta(days=1)
+    max_age = timezone.now() - datetime.timedelta(days=2)
     if req.method == "POST":
         get_repos(github.get_github(req), organisation)
         return redirect(reverse('organisation', kwargs={'org': organisation.login}))
