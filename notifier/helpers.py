@@ -75,6 +75,7 @@ def get_repos(github, org):
           node {
             id
             name
+            isArchived
           }
         }
       }
@@ -92,6 +93,7 @@ def get_repos(github, org):
           node {
             id
             name
+            isArchived
           }
         }
       }
@@ -113,7 +115,12 @@ def get_repos(github, org):
             node = data["node"]
             try:
                 repo = Repository.objects.get(id=node["id"])
+                if node["isArchived"]:
+                    repo.delete()
+                    continue # delete archived repos as they don't get vulnerability updates
             except Repository.DoesNotExist:
+                if node["isArchived"]:
+                    continue # skip archived repos as they don't get vulnerability updates
                 repo = Repository(id=node["id"])
             repo.org = org
             repo.name = node["name"]
