@@ -69,7 +69,7 @@ def get_repos(github, org):
         query = """
   query ($org: String!, $repo_after: String) {
     user(login: $org) {
-      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER) {
+      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER, isFork: false) {
         edges {
           cursor
           node {
@@ -87,7 +87,7 @@ def get_repos(github, org):
         query = """
   query ($org: String!, $repo_after: String) {
     organization(login: $org) {
-      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER) {
+      repositories(first: 20, after: $repo_after, orderBy: {direction: ASC, field: NAME}, affiliations: OWNER, isFork: false) {
         edges {
           cursor
           node {
