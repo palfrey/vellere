@@ -106,7 +106,6 @@ def get_repos(github, org):
     }
     repos = []
     while True:
-        new_repos = 0
         cursor = None
         graph = run_graphql(github, query, variables)[key]
         if graph == None:
@@ -116,8 +115,7 @@ def get_repos(github, org):
             try:
                 repo = Repository.objects.get(id=node["id"])
                 if node["isArchived"]:
-                    repo.delete()
-                    continue # delete archived repos as they don't get vulnerability updates
+                    continue # skip archived repos as they don't get vulnerability updates
             except Repository.DoesNotExist:
                 if node["isArchived"]:
                     continue # skip archived repos as they don't get vulnerability updates
@@ -126,11 +124,15 @@ def get_repos(github, org):
             repo.name = node["name"]
             repo.save()
             repos.append(repo)
-            new_repos +=1
             cursor = data["cursor"]
-        if new_repos < 20: # i.e. run out, because that's the limit
+        if len(graph["repositories"]["edges"]) < 20: # i.e. run out, because that's the limit
             break
         variables["repo_after"] = cursor
+    old_repos = set([x['id'] for x in Repository.objects.filter(org=org).values('id')])
+    new_repos = set([x.id for x in repos])
+    diff = old_repos - new_repos
+    for r in diff:
+        Repository.objects.get(id=r).delete()
     org.repos_updated = timezone.now()
     org.save()
     return repos
