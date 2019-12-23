@@ -1,7 +1,0 @@
-https://developer.github.com/changes/2018-04-24-preview-dependency-graph-and-vulnerability-hooks/
-https://github.com/skevy/graphiql-app
-https://www.dictionary.com/browse/vulnerably
-vellere "pluck, to tear."
-
-https://github.com/settings/applications/new
-SLACK_CLIENT_SECRET=dsfsdf SLACK_CLIENT_ID=dsfsdf AUTHLIB_INSECURE_TRANSPORT=1 GITHUB_CLIENT_SECRET=foo GITHUB_CLIENT_ID=bar python manage.py runserver
