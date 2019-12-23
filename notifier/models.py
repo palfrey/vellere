@@ -73,7 +73,7 @@ class Organisation(models.Model):
     webhook_id = models.IntegerField(null=True)
 
     def vulnerability_count(self):
-        return Vulnerability.objects.filter(repo__org=self, resolved=False).count()
+        return Vulnerability.objects.filter(repo__org=self, resolved=False, dismissed=False).count()
 
     def last_updated(self):
         return humanize.naturaltime(timezone.now() - self.repos_updated)
@@ -119,7 +119,7 @@ class Repository(models.Model):
     def vuln_count(self):
         if not hasattr(self, "vulnerability__count"):
             raise Exception
-            self.vulnerability__count = self.vulnerability_set.filter(resolved=False).count()
+            self.vulnerability__count = self.vulnerability_set.filter(resolved=False, dismissed=False).count()
         return self.vulnerability__count
 
     def vuln_info(self):

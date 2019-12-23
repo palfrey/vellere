@@ -68,7 +68,7 @@ def organisation(req, org=None):
         return redirect(reverse('organisation', kwargs={'org': organisation.login}))
     if organisation.repos_updated == None or organisation.repos_updated < max_age or req.method == "POST":
         get_repos(github.get_github(req), organisation)
-    repos = list(organisation.repository_set.annotate(vulnerability__count=Count('vulnerability', filter=Q(vulnerability__resolved=False))))
+    repos = list(organisation.repository_set.annotate(vulnerability__count=Count('vulnerability', filter=Q(vulnerability__resolved=False, vulnerability__dismissed=False))))
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
         repos.sort(key=lambda x: x.vuln_count, reverse=True)

@@ -88,12 +88,12 @@ def repo_vulnerabilities(github, repo, force_update=False):
     max_age = timezone.now() - datetime.timedelta(days=2)
     if repo.vuln_updated == None or repo.vuln_updated < max_age or force_update:
         get_vulnerabilities(github, repo.org, repo)
-    vulns = list(repo.vulnerability_set.filter(resolved=False))
+    vulns = list(repo.vulnerability_set.filter(resolved=False, dismissed=False))
     return vulns
 
 # Doesn't update, because that's an expensive op
 def org_vulnerabilities(github, org):
-    return Vulnerability.objects.filter(repo__org=org, resolved=False)
+    return Vulnerability.objects.filter(repo__org=org, resolved=False, dismissed=False)
 
 def repo_sent(github, link):
     vulns = repo_vulnerabilities(github, link.repo)
