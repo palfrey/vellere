@@ -59,6 +59,14 @@ def get_organisations(github, user):
                 OrganisationUser.objects.get(user=user, org=org)
             except OrganisationUser.DoesNotExist:
                 OrganisationUser(user=user, org=org).save()
+
+    old_orgs = set([x['id'] for x in Organisation.objects.values('id')])
+    new_orgs = set([x.id for x in orgs])
+    new_orgs.add(Organisation.objects.get(user_organisation=True, login=user.username).id)
+    diff = old_orgs - new_orgs
+    for o in diff:
+        Organisation.objects.get(id=o).delete()
+
     user.orgs_updated = timezone.now()
     user.save()
     return orgs
