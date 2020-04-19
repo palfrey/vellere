@@ -71,7 +71,7 @@ def organisation(req, org=None):
     repos = list(organisation.repository_set.annotate(vulnerability__count=Count('vulnerability', filter=Q(vulnerability__resolved=False, vulnerability__dismissed=False))))
     sort = req.GET.get('sort', 'name')
     if sort == 'vulnerabilities':
-        repos.sort(key=lambda x: x.vuln_count, reverse=True)
+        repos.sort(key=lambda x: (-x.vuln_count, x.name.lower()))
     else: # default to sort by name
         repos.sort(key=lambda x: x.name.lower())
     slack_links = SlackOrgLink.objects.filter(org=organisation)
