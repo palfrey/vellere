@@ -3,7 +3,8 @@ django
 requests_oauthlib
 jinja2
 humanize
-django-crontab
+# FIXME: Workaround until https://github.com/kraiz/django-crontab/pull/100 is merged
+git+https://github.com/palfrey/django-crontab.git@exit-code-on-failure#egg=django-crontab
 
 gunicorn
 django-heroku
