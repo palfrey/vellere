@@ -12,7 +12,7 @@ dj-database-url==0.5.0    # via django-heroku
 git+https://github.com/palfrey/django-crontab.git@exit-code-on-failure#egg=django-crontab  # via -r requirements.in
 django-debug-toolbar==2.1  # via -r requirements.in
 django-heroku==0.3.1      # via -r requirements.in
-django==3.0.3             # via -r requirements.in, django-crontab, django-debug-toolbar, django-heroku
+django==3.0.7             # via -r requirements.in, django-crontab, django-debug-toolbar, django-heroku
 gunicorn==19.9.0          # via -r requirements.in
 humanize==0.5.1           # via -r requirements.in
 idna==2.8                 # via requests
