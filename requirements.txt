@@ -4,27 +4,64 @@
 #
 #    pip-compile
 #
-asgiref==3.2.3            # via django
-certifi==2019.3.9         # via requests
-chardet==3.0.4            # via requests
-click==7.0                # via pip-tools
-dj-database-url==0.5.0    # via django-heroku
-git+https://github.com/palfrey/django-crontab.git@exit-code-on-failure#egg=django-crontab  # via -r requirements.in
-django-debug-toolbar==2.1  # via -r requirements.in
-django-heroku==0.3.1      # via -r requirements.in
-django==3.0.7             # via -r requirements.in, django-crontab, django-debug-toolbar, django-heroku
-gunicorn==19.9.0          # via -r requirements.in
-humanize==0.5.1           # via -r requirements.in
-idna==2.8                 # via requests
-jinja2==2.10.1            # via -r requirements.in
-markupsafe==1.1.1         # via jinja2
-oauthlib==3.0.1           # via requests-oauthlib
-pip-tools==4.3.0          # via -r requirements.in
-psycopg2==2.8.2           # via django-heroku
-pytz==2019.1              # via django
-requests-oauthlib==1.2.0  # via -r requirements.in
-requests==2.21.0          # via -r requirements.in, requests-oauthlib
-six==1.12.0               # via pip-tools
-sqlparse==0.3.0           # via django, django-debug-toolbar
-urllib3==1.24.2           # via requests
-whitenoise==5.0.1         # via django-heroku
+asgiref==3.2.3
+    # via django
+certifi==2019.3.9
+    # via requests
+chardet==3.0.4
+    # via requests
+click==7.0
+    # via pip-tools
+dj-database-url==0.5.0
+    # via django-heroku
+git+https://github.com/palfrey/django-crontab.git@exit-code-on-failure#egg=django-crontab
+    # via -r requirements.in
+django-debug-toolbar==2.1
+    # via -r requirements.in
+django-heroku==0.3.1
+    # via -r requirements.in
+django==3.0.7
+    # via
+    #   -r requirements.in
+    #   django-crontab
+    #   django-debug-toolbar
+    #   django-heroku
+gunicorn==19.9.0
+    # via -r requirements.in
+humanize==0.5.1
+    # via -r requirements.in
+idna==2.8
+    # via requests
+jinja2==2.10.1
+    # via -r requirements.in
+markupsafe==1.1.1
+    # via jinja2
+oauthlib==3.0.1
+    # via requests-oauthlib
+pep517==0.10.0
+    # via pip-tools
+pip-tools==6.0.1
+    # via -r requirements.in
+psycopg2==2.8.6
+    # via django-heroku
+pytz==2019.1
+    # via django
+requests-oauthlib==1.2.0
+    # via -r requirements.in
+requests==2.21.0
+    # via
+    #   -r requirements.in
+    #   requests-oauthlib
+sqlparse==0.3.0
+    # via
+    #   django
+    #   django-debug-toolbar
+toml==0.10.2
+    # via pep517
+urllib3==1.24.2
+    # via requests
+whitenoise==5.2.0
+    # via django-heroku
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip
