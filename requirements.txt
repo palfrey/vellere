@@ -4,7 +4,7 @@
 #
 #    pip-compile
 #
-asgiref==3.2.3
+asgiref==3.3.1
     # via django
 certifi==2019.3.9
     # via requests
@@ -20,7 +20,7 @@ django-debug-toolbar==2.1
     # via -r requirements.in
 django-heroku==0.3.1
     # via -r requirements.in
-django==3.0.13
+django==3.1.6
     # via
     #   -r requirements.in
     #   django-crontab
