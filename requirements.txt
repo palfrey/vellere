@@ -48,7 +48,7 @@ pytz==2019.1
     # via django
 requests-oauthlib==1.2.0
     # via -r requirements.in
-requests==2.21.0
+requests==2.25.1
     # via
     #   -r requirements.in
     #   requests-oauthlib
@@ -58,7 +58,7 @@ sqlparse==0.3.0
     #   django-debug-toolbar
 toml==0.10.2
     # via pep517
-urllib3==1.24.2
+urllib3==1.26.5
     # via requests
 whitenoise==5.2.0
     # via django-heroku
