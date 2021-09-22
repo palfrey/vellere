@@ -14,18 +14,18 @@ click==7.0
     # via pip-tools
 dj-database-url==0.5.0
     # via django-heroku
+django==3.1.13
+    # via
+    #   -r requirements.in
+    #   django-crontab
+    #   django-debug-toolbar
+    #   django-heroku
 git+https://github.com/palfrey/django-crontab.git@exit-code-on-failure#egg=django-crontab
     # via -r requirements.in
 django-debug-toolbar==2.2.1
     # via -r requirements.in
 django-heroku==0.3.1
     # via -r requirements.in
-django==3.1.12
-    # via
-    #   -r requirements.in
-    #   django-crontab
-    #   django-debug-toolbar
-    #   django-heroku
 gunicorn==19.9.0
     # via -r requirements.in
 humanize==0.5.1
@@ -46,12 +46,12 @@ psycopg2==2.8.6
     # via django-heroku
 pytz==2019.1
     # via django
-requests-oauthlib==1.2.0
-    # via -r requirements.in
 requests==2.25.1
     # via
     #   -r requirements.in
     #   requests-oauthlib
+requests-oauthlib==1.2.0
+    # via -r requirements.in
 sqlparse==0.3.0
     # via
     #   django
