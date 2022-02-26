@@ -13,6 +13,7 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
         cursor
         node {
           id
+          fixedAt
           vulnerableManifestPath
           vulnerableRequirements
           dismisser {
@@ -67,6 +68,8 @@ query ($org: String!, $repo: String!, $vuln_after: String) {
             vuln.url = adv["references"][0]["url"]
             vuln.vulnerableVersions = sec["vulnerableVersionRange"]
             vuln.package = sec["package"]["name"]
+            if node["fixedAt"] is not None:
+                vuln.resolved = True
             vuln.save()
             vulns.append(vuln)
             cursor = data["cursor"]

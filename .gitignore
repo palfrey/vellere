@@ -4,3 +4,4 @@ db.sqlite3
 start.sh
 __pycache__/
 .DS_Store
+.env

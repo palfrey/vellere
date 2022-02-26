@@ -13,8 +13,9 @@ Local install
 3. Create a [Slack App](https://api.slack.com/apps) and export the client id/secret as environment variables called `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` 
 4. `pip install -r requirements.txt`
 5. Optional: Setup a database (e.g. Postgres) and export the URL to the database as `DATABASE_URL` using the [dj-database-url URL schema](https://github.com/kennethreitz/dj-database-url#url-schema). If you don't do this, we'll use sqlite by default, which works fine for local dev.
-6. `python manage.py migrate`
-7. `python manage.py runserver`
+6. Optional: Export `OAUTHLIB_INSECURE_TRANSPORT=1` for local dev without HTTPS
+7. `python manage.py migrate`
+8. `python manage.py runserver`
 
 [Wharf](https://github.com/palfrey/wharf) install
 ----------
