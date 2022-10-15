@@ -11,7 +11,9 @@ token_url = 'https://github.com/login/oauth/access_token'
 
 def get_github(req, user=None):
     if user == None:
-        user = req.user
+        user = req.user        
+    if user.oauth_token == "":
+        return None 
     return OAuth2Session(settings.GITHUB_CLIENT_ID, token=json.loads(user.oauth_token))
 
 def login(req):
