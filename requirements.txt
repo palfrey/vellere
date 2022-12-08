@@ -8,7 +8,7 @@ asgiref==3.3.4
     # via django
 attrs==22.1.0
     # via pytest
-certifi==2019.3.9
+certifi==2022.12.7
     # via requests
 chardet==3.0.4
     # via requests
