@@ -10,7 +10,7 @@ attrs==22.1.0
     # via pytest
 certifi==2023.7.22
     # via requests
-chardet==3.0.4
+charset-normalizer==3.2.0
     # via requests
 click==7.0
     # via pip-tools
@@ -71,7 +71,7 @@ pytest-watch==4.2.0
     # via -r requirements.in
 pytz==2019.1
     # via django
-requests==2.25.1
+requests==2.31.0
     # via
     #   -r requirements.in
     #   requests-oauthlib
