@@ -85,7 +85,7 @@ toml==0.10.2
     # via pep517
 tomli==2.0.1
     # via pytest
-urllib3==1.26.5
+urllib3==1.26.17
     # via requests
 watchdog==2.1.9
     # via pytest-watch
