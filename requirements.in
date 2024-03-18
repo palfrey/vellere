@@ -1,5 +1,5 @@
 requests
-django ~= 3.2.24
+django ~= 3.2.25
 requests_oauthlib
 jinja2
 humanize
